@@ -1,0 +1,340 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --pink: #e88ca8;
+    --dark-pink: #c85f7e;
+    --light-pink: #fff0f5;
+    --soft-pink: #fde1e9;
+    --text: #4a3038;
+    --white: #ffffff;
+}
+
+body {
+    min-height: 100vh;
+    font-family: Georgia, "Times New Roman", serif;
+    background:
+        radial-gradient(circle at 20% 20%, #ffe8f0 0, transparent 30%),
+        radial-gradient(circle at 80% 80%, #ffdfe9 0, transparent 32%),
+        linear-gradient(135deg, #ffffff, #fff5f8);
+    color: var(--text);
+    overflow-x: hidden;
+}
+
+/* Main card */
+
+.invitation {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+}
+
+/* Screens */
+
+.screen {
+    display: none;
+    width: min(680px, 100%);
+    text-align: center;
+    padding: 55px 35px;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(232, 140, 168, 0.25);
+    border-radius: 32px;
+    box-shadow:
+        0 25px 70px rgba(200, 95, 126, 0.13),
+        0 5px 20px rgba(100, 50, 70, 0.06);
+    backdrop-filter: blur(12px);
+    animation: fadeIn 0.7s ease;
+}
+
+.screen.active {
+    display: block;
+}
+
+/* Flowers */
+
+.flower {
+    font-size: 52px;
+    margin-bottom: 20px;
+    animation: floatFlower 3s ease-in-out infinite;
+}
+
+/* Text */
+
+.small-text {
+    color: var(--dark-pink);
+    font-size: 15px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+
+h1 {
+    font-size: clamp(38px, 7vw, 65px);
+    line-height: 1.08;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 28px;
+}
+
+h1 span {
+    color: var(--pink);
+    font-style: italic;
+}
+
+h2 {
+    font-size: clamp(30px, 5vw, 45px);
+    font-weight: 500;
+    margin-bottom: 25px;
+    color: var(--text);
+}
+
+p {
+    font-family: Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.8;
+    color: #755a63;
+    margin: 12px auto;
+    max-width: 520px;
+}
+
+/* Buttons */
+
+button {
+    border: none;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, #e98eaa, #c96281);
+    padding: 15px 34px;
+    border-radius: 50px;
+    margin-top: 22px;
+    box-shadow: 0 12px 28px rgba(200, 95, 126, 0.25);
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 17px 35px rgba(200, 95, 126, 0.32);
+}
+
+button:active {
+    transform: scale(0.96);
+}
+
+/* Yes / No */
+
+.choice-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.no-button {
+    color: var(--dark-pink);
+    background: white;
+    border: 1px solid #efb2c3;
+    box-shadow: none;
+}
+
+/* Options */
+
+.options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    max-width: 500px;
+    margin: 30px auto 0;
+}
+
+.options button {
+    margin: 0;
+    color: var(--text);
+    background: #fff8fa;
+    border: 1px solid #f2c4d1;
+    box-shadow: none;
+}
+
+.options button:hover {
+    color: white;
+    background: linear-gradient(135deg, #e98eaa, #c96281);
+}
+
+/* Date & time */
+
+input[type="date"],
+input[type="time"] {
+    width: min(330px, 100%);
+    padding: 16px 18px;
+    border: 1px solid #edb4c5;
+    border-radius: 15px;
+    background: white;
+    color: var(--text);
+    font-size: 16px;
+    outline: none;
+    margin: 15px 0;
+}
+
+input:focus {
+    border-color: var(--pink);
+    box-shadow: 0 0 0 4px rgba(232, 140, 168, 0.12);
+}
+
+/* Summary */
+
+.summary {
+    max-width: 430px;
+    margin: 25px auto;
+    padding: 22px;
+    border-radius: 20px;
+    background: #fff7f9;
+    border: 1px solid #f3c7d3;
+}
+
+.summary p {
+    text-align: left;
+    font-size: 15px;
+    margin: 10px 0;
+}
+
+.summary strong {
+    color: var(--dark-pink);
+}
+
+/* Final heart */
+
+.big-heart {
+    font-size: 90px;
+    color: #e87899;
+    margin-top: 25px;
+    animation: heartbeat 1.2s infinite;
+}
+
+/* Floating hearts */
+
+.hearts {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.hearts::before,
+.hearts::after {
+    content: "♥  ♡  ♥  ♡  ♥  ♡";
+    position: absolute;
+    left: 0;
+    width: 100%;
+    color: rgba(232, 140, 168, 0.22);
+    font-size: 25px;
+    letter-spacing: 35px;
+    animation: heartsMove 14s linear infinite;
+}
+
+.hearts::before {
+    top: 100%;
+}
+
+.hearts::after {
+    top: 110%;
+    animation-delay: 6s;
+    font-size: 18px;
+}
+
+/* Animations */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes floatFlower {
+    0%, 100% {
+        transform: translateY(0) rotate(-2deg);
+    }
+
+    50% {
+        transform: translateY(-8px) rotate(2deg);
+    }
+}
+
+@keyframes heartbeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    15% {
+        transform: scale(1.15);
+    }
+
+    30% {
+        transform: scale(1);
+    }
+
+    45% {
+        transform: scale(1.12);
+    }
+}
+
+@keyframes heartsMove {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-120vh);
+    }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    .invitation {
+        padding: 15px;
+    }
+
+    .screen {
+        padding: 42px 20px;
+        border-radius: 25px;
+    }
+
+    h1 {
+        font-size: 39px;
+    }
+
+    h2 {
+        font-size: 31px;
+    }
+
+    p {
+        font-size: 16px;
+    }
+
+    .options {
+        grid-template-columns: 1fr;
+    }
+
+    .choice-buttons button {
+        width: 170px;
+    }
+}
