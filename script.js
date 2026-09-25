@@ -138,10 +138,28 @@ function formatTime(time) {
 }
 
 
-// Final confirmation
+// Final confirmation + WhatsApp
 function confirmDate() {
 
-    console.log("Date invitation confirmed:", datePlan);
+    const message =
+        "❤️ Date Invitation Response\n\n" +
+        "She said YES! 💕\n\n" +
+        "📍 Place: " + datePlan.place + "\n" +
+        "🍕 Food: " + datePlan.food + "\n" +
+        "🚗 Travel: " + datePlan.travel + "\n" +
+        "📅 Date: " + formatDate(datePlan.date) + "\n" +
+        "⏰ Time: " + formatTime(datePlan.time) + "\n\n" +
+        "Can't wait! ❤️";
+
+    const yourWhatsAppNumber = "923214825245";
+
+    const whatsappURL =
+        "https://wa.me/" +
+        yourWhatsAppNumber +
+        "?text=" +
+        encodeURIComponent(message);
+
+    window.open(whatsappURL, "_blank");
 
     nextScreen(11);
 }
