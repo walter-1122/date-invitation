@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Little Something For You ❤️</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="hearts"></div>
+
+    <main class="invitation">
+
+        <!-- SCREEN 1 -->
+        <section class="screen active" id="screen1">
+            <div class="flower">🌸</div>
+
+            <p class="small-text">Just one little question...</p>
+
+            <h1>How are you doing,<br><span>Gorgeous?</span> ❤️</h1>
+
+            <button onclick="nextScreen(2)">
+                Fine 💗
+            </button>
+        </section>
+
+
+        <!-- SCREEN 2 -->
+        <section class="screen" id="screen2">
+            <div class="flower">🌷</div>
+
+            <h2>I want to say something...</h2>
+
+            <p>
+                I've wanted to tell you something for many days,
+                but I didn't have the courage.
+            </p>
+
+            <p>
+                That's why I chose this little way to say it.
+            </p>
+
+            <p>
+                So if you want to know what I've been wanting
+                to say...
+            </p>
+
+            <button onclick="nextScreen(3)">
+                Next 💕
+            </button>
+        </section>
+
+
+        <!-- SCREEN 3 -->
+        <section class="screen" id="screen3">
+            <div class="flower">🌹</div>
+
+            <p class="small-text">Okay... here it is.</p>
+
+            <h1>Would you like to<br><span>go on a date with me?</span> ❤️</h1>
+
+            <div class="choice-buttons">
+                <button onclick="nextScreen(4)">
+                    YES 💗
+                </button>
+
+                <button class="no-button" onclick="noThanks()">
+                    NO
+                </button>
+            </div>
+        </section>
+
+
+        <!-- SCREEN 4 -->
+        <section class="screen" id="screen4">
+            <div class="flower">🌸</div>
+
+            <h2>Yay! ❤️</h2>
+
+            <p>Let's make our little date plan.</p>
+
+            <button onclick="nextScreen(5)">
+                Let's plan it ✨
+            </button>
+        </section>
+
+
+        <!-- SCREEN 5 -->
+        <section class="screen" id="screen5">
+            <div class="flower">🌷</div>
+
+            <h2>Where would you like to go?</h2>
+
+            <div class="options">
+                <button onclick="selectOption('place','Cute Café')">☕ Cute Café</button>
+                <button onclick="selectOption('place','Dinner')">🍽️ Dinner</button>
+                <button onclick="selectOption('place','Park')">🌳 Park</button>
+                <button onclick="selectOption('place','Movie')">🎬 Movie</button>
+            </div>
+        </section>
+
+
+        <!-- SCREEN 6 -->
+        <section class="screen" id="screen6">
+            <div class="flower">🌹</div>
+
+            <h2>What should we have?</h2>
+
+            <div class="options">
+                <button onclick="selectOption('food','Pizza')">🍕 Pizza</button>
+                <button onclick="selectOption('food','Burgers')">🍔 Burgers</button>
+                <button onclick="selectOption('food','Pasta')">🍝 Pasta</button>
+                <button onclick="selectOption('food','Coffee & Dessert')">🍰 Coffee & Dessert</button>
+            </div>
+        </section>
+
+
+        <!-- SCREEN 7 -->
+        <section class="screen" id="screen7">
+            <div class="flower">🌸</div>
+
+            <h2>How should we get there?</h2>
+
+            <div class="options">
+                <button onclick="selectOption('travel','Car')">🚗 Car</button>
+                <button onclick="selectOption('travel','Bike')">🏍️ Bike</button>
+                <button onclick="selectOption('travel','Ride')">🚕 Ride</button>
+                <button onclick="selectOption('travel','Decide Together')">💕 Decide Together</button>
+            </div>
+        </section>
+
+
+        <!-- SCREEN 8 -->
+        <section class="screen" id="screen8">
+            <div class="flower">🌷</div>
+
+            <h2>Which day works for you?</h2>
+
+            <input type="date" id="date">
+
+            <button onclick="saveDate()">
+                Next 💕
+            </button>
+        </section>
+
+
+        <!-- SCREEN 9 -->
+        <section class="screen" id="screen9">
+            <div class="flower">🌹</div>
+
+            <h2>What time would you like?</h2>
+
+            <input type="time" id="time">
+
+            <button onclick="saveTime()">
+                Next ✨
+            </button>
+        </section>
+
+
+        <!-- SCREEN 10 -->
+        <section class="screen" id="screen10">
+            <div class="flower">💐</div>
+
+            <h2>Our Date Plan ❤️</h2>
+
+            <div class="summary">
+                <p>📍 <strong>Place:</strong> <span id="summaryPlace"></span></p>
+                <p>🍕 <strong>Food:</strong> <span id="summaryFood"></span></p>
+                <p>🚗 <strong>Travel:</strong> <span id="summaryTravel"></span></p>
+                <p>📅 <strong>Date:</strong> <span id="summaryDate"></span></p>
+                <p>⏰ <strong>Time:</strong> <span id="summaryTime"></span></p>
+            </div>
+
+            <p>Everything looks good? ❤️</p>
+
+            <button onclick="confirmDate()">
+                Confirm Our Date 💕
+            </button>
+        </section>
+
+
+        <!-- FINAL -->
+        <section class="screen" id="screen11">
+            <div class="flower">💖</div>
+
+            <h1>It's a Date! ❤️</h1>
+
+            <p>
+                I can't wait to spend some time with you.
+            </p>
+
+            <div class="big-heart">♥</div>
+        </section>
+
+
+        <!-- NO -->
+        <section class="screen" id="noScreen">
+            <div class="flower">🌷</div>
+
+            <h2>No worries ❤️</h2>
+
+            <p>
+                Thank you for being honest.
+                I still hope you have a beautiful day.
+            </p>
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
