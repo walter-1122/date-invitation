@@ -1,407 +1,238 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#fff5f7">
-    <meta name="description" content="A little romantic surprise, made with love. Create a special date plan together.">
-
-    <title>A Little Something For You | Our Special Date</title>
-
-    <!-- Custom favicon -->
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-
-    <!-- Elegant fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4b0714">
+  <meta name="description" content="Create a thoughtful date invitation and share a little love.">
+  <title>A Little Something For You | Our Special Date</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <div class="ambient ambient-one" aria-hidden="true"></div>
-    <div class="ambient ambient-two" aria-hidden="true"></div>
-    <div class="hearts" aria-hidden="true"></div>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+  <div class="hearts" aria-hidden="true"></div>
 
-    <header class="site-header">
-        <a href="#" class="brand" aria-label="Our special date home">
-            <span class="brand-icon">♥</span>
-            <span>little <strong>moments</strong></span>
-        </a>
-        <span class="header-note">A little something special <span>♡</span></span>
-    </header>
+  <header class="site-header">
+    <a href="#" class="brand" aria-label="Our special date home">
+      <span class="brand-icon">♥</span>
+      <span>little <strong>moments</strong></span>
+    </a>
+    <span class="header-note">A little something special <span>♡</span></span>
+  </header>
 
-    <main class="page-shell">
-
-        <!-- CREATE INVITATION SCREEN -->
-<section class="screen active auth-screen" id="loginScreen">
-    <div class="auth-card">
+  <main class="page-shell">
+    <!-- CREATOR START -->
+    <section class="screen active auth-screen" id="loginScreen">
+      <div class="auth-card">
         <div class="brand-emblem" aria-hidden="true">♥</div>
-
         <p class="eyebrow">YOUR LITTLE SURPRISE</p>
-
-        <h1 class="auth-title">
-            Create your<br>
-            <span>date invitation.</span>
-        </h1>
-
-        <p class="auth-description">
-            Enter your WhatsApp number and create a special
-            invitation link to share with someone you love.
-        </p>
-
-        <form class="auth-form" onsubmit="event.preventDefault(); createInvitationLink();">
-            <label for="ownerPhone">Your WhatsApp number</label>
-
-            <input
-                type="tel"
-                id="ownerPhone"
-                name="ownerPhone"
-                placeholder="Country code + number"
-                autocomplete="tel"
-                required
-            >
-
-            <p class="supporting-text">
-                Include your country code, without the + sign.
-                Example: 923001234567
-            </p>
-
-            <button type="submit" class="primary-button">
-                Create my invitation ❤️
-            </button>
+        <h1 class="auth-title">Create your<br><span>date invitation.</span></h1>
+        <p class="auth-description">Build a thoughtful date plan and create a link to share with someone special.</p>
+        <form class="auth-form" id="createInvitationForm">
+          <label for="ownerPhone">Your WhatsApp number</label>
+          <input type="tel" id="ownerPhone" name="ownerPhone" placeholder="Country code + number" autocomplete="tel" required>
+          <p class="supporting-text">Include your country code without the + sign. Example: 923001234567</p>
+          <button type="submit" class="primary-button">Create my invitation ❤️</button>
         </form>
+        <p class="privacy-note"><span aria-hidden="true">♡</span> Demo version — no account needed yet.</p>
+      </div>
+    </section>
 
-        <p class="privacy-note">
-            <span aria-hidden="true">♡</span>
-            No account required.
-        </p>
-    </div>
-</section>
+    <!-- LINK RESULT: NO POP-UP -->
+    <section class="screen auth-screen" id="linkScreen">
+      <div class="auth-card">
+        <div class="brand-emblem" aria-hidden="true">♥</div>
+        <p class="eyebrow">YOUR INVITATION IS READY</p>
+        <h1 class="auth-title">A little link<br><span>full of love.</span></h1>
+        <p class="auth-description">Copy this link and send it to your special person.</p>
+        <label for="invitationLink">Your invitation link</label>
+        <input type="text" id="invitationLink" readonly>
+        <button type="button" class="primary-button" id="copyInvitationLink">Copy invitation link ❤️</button>
+        <p class="form-message" id="copyMessage" role="status" aria-live="polite"></p>
+        <button type="button" class="back-button" id="editInvitationPhone">← Back</button>
+        <p class="supporting-text">Note: this starter version uses a demo link. Secure accounts and saved cross-device responses will be connected through Appwrite in a later step.</p>
+      </div>
+    </section>
 
-        <!-- SIGNUP SCREEN -->
-        <section class="screen auth-screen" id="signupScreen">
-            <div class="auth-card">
-                <div class="brand-emblem" aria-hidden="true">♥</div>
+    <!-- INVITATION EXPERIENCE -->
+    <section class="screen invitation-screen" id="screen1">
+      <div class="invitation-card">
+        <div class="step-indicator">A LITTLE SURPRISE <span>♡</span></div>
+        <div class="flower" aria-hidden="true">🌸</div>
+        <p class="small-text">Just one little question...</p>
+        <h1>How are you doing,<br><span>Gorgeous?</span> ❤️</h1>
+        <p class="supporting-text">I hope this little surprise brings a smile to your face.</p>
+        <label class="field-label" for="guestName">What should I call you?</label>
+        <input type="text" id="guestName" class="date-input" placeholder="Your name" maxlength="60" autocomplete="name">
+        <button type="button" class="primary-button" onclick="nextScreen(2)">Let's begin 💗</button>
+        <p class="card-footer">Made with a little extra love</p>
+      </div>
+    </section>
 
-                <p class="eyebrow">YOUR STORY STARTS HERE</p>
+    <section class="screen invitation-screen" id="screen2">
+      <div class="invitation-card">
+        <div class="step-indicator">A LITTLE SURPRISE <span>♡</span></div>
+        <div class="flower" aria-hidden="true">🌷</div>
+        <p class="eyebrow">A LITTLE CONFESSION</p>
+        <h2>I want to say something...</h2>
+        <p>I've wanted to tell you something for many days, and I wanted to do it in a way that feels special.</p>
+        <p>So here's a little question, from the heart.</p>
+        <button type="button" class="primary-button" onclick="nextScreen(3)">Tell me more 💕</button>
+        <p class="card-footer">Something from the heart</p>
+      </div>
+    </section>
 
-                <h1 class="auth-title">
-                    Make yourself<br>
-                    <span>at home.</span>
-                </h1>
+    <section class="screen invitation-screen" id="screen3">
+      <div class="invitation-card">
+        <div class="step-indicator">THE BIG QUESTION <span>♡</span></div>
+        <div class="flower" aria-hidden="true">🌹</div>
+        <p class="eyebrow">HERE GOES NOTHING...</p>
+        <h1>Would you like to<br><span>go on a date with me?</span> ❤️</h1>
+        <p class="supporting-text">No pressure. Your answer is completely your choice.</p>
+        <div class="choice-buttons">
+          <button type="button" class="primary-button" onclick="nextScreen(4)">Yes, I'd love to! 💗</button>
+          <button type="button" class="secondary-button no-button" onclick="noThanks()">No, thank you</button>
+        </div>
+        <p class="card-footer">Your answer is always yours to choose.</p>
+      </div>
+    </section>
 
-                <p class="auth-description">
-                    Create your account to continue to the invitation.
-                </p>
+    <section class="screen invitation-screen" id="screen4">
+      <div class="invitation-card">
+        <div class="flower" aria-hidden="true">🌸</div>
+        <p class="eyebrow">WELL, THIS IS EXCITING</p>
+        <h1>Yay! <span>❤️</span></h1>
+        <p>Let's plan a little moment that we'll both remember.</p>
+        <button type="button" class="primary-button" onclick="nextScreen(5)">Let's plan it ✨</button>
+      </div>
+    </section>
 
-                <form id="signupForm" class="auth-form">
-                    <label for="signupName">Your name</label>
-                    <input
-                        type="text"
-                        id="signupName"
-                        name="name"
-                        placeholder="Your name"
-                        autocomplete="name"
-                        required
-                    >
+    <section class="screen invitation-screen" id="screen5">
+      <div class="invitation-card">
+        <div class="flower" aria-hidden="true">🌷</div>
+        <p class="eyebrow">FIRST THINGS FIRST</p>
+        <h2>Where should we go?</h2>
+        <p class="supporting-text">Pick the kind of place that feels right.</p>
+        <div class="options">
+          <button type="button" class="option-button" onclick="selectOption('place','Cute Café')">☕ <span>Cute Café</span></button>
+          <button type="button" class="option-button" onclick="selectOption('place','Dinner')">🍽️ <span>Dinner</span></button>
+          <button type="button" class="option-button" onclick="selectOption('place','Park')">🌳 <span>A peaceful park</span></button>
+          <button type="button" class="option-button" onclick="selectOption('place','Movie')">🎬 <span>A movie</span></button>
+        </div>
+        <button type="button" class="back-button" onclick="nextScreen(4)">← Go back</button>
+      </div>
+    </section>
 
-                    <label for="signupEmail">Email address</label>
-                    <input
-                        type="email"
-                        id="signupEmail"
-                        name="email"
-                        placeholder="you@example.com"
-                        autocomplete="email"
-                        required
-                    >
+    <section class="screen invitation-screen" id="screen6">
+      <div class="invitation-card">
+        <div class="flower" aria-hidden="true">🌹</div>
+        <p class="eyebrow">A LITTLE SOMETHING TO EAT</p>
+        <h2>What sounds delicious?</h2>
+        <p class="supporting-text">Because good food makes good moments.</p>
+        <div class="options">
+          <button type="button" class="option-button" onclick="selectOption('food','Pizza')">🍕 <span>Pizza</span></button>
+          <button type="button" class="option-button" onclick="selectOption('food','Burgers')">🍔 <span>Burgers</span></button>
+          <button type="button" class="option-button" onclick="selectOption('food','Pasta')">🍝 <span>Pasta</span></button>
+          <button type="button" class="option-button" onclick="selectOption('food','Coffee & Dessert')">🍰 <span>Coffee & dessert</span></button>
+        </div>
+        <button type="button" class="back-button" onclick="nextScreen(5)">← Go back</button>
+      </div>
+    </section>
 
-                    <label for="signupPassword">Create a password</label>
-                    <input
-                        type="password"
-                        id="signupPassword"
-                        name="password"
-                        placeholder="At least 8 characters"
-                        autocomplete="new-password"
-                        minlength="8"
-                        required
-                    >
+    <section class="screen invitation-screen" id="screen7">
+      <div class="invitation-card">
+        <div class="flower" aria-hidden="true">🌸</div>
+        <p class="eyebrow">THE JOURNEY</p>
+        <h2>How shall we get there?</h2>
+        <p class="supporting-text">It's the company that matters most.</p>
+        <div class="options">
+          <button type="button" class="option-button" onclick="selectOption('travel','Car')">🚗 <span>Car</span></button>
+          <button type="button" class="option-button" onclick="selectOption('travel','Bike')">🏍️ <span>Bike</span></button>
+          <button type="button" class="option-button" onclick="selectOption('travel','Ride')">🚕 <span>Ride</span></button>
+          <button type="button" class="option-button" onclick="selectOption('travel','Decide Together')">💕 <span>Decide together</span></button>
+        </div>
+        <button type="button" class="back-button" onclick="nextScreen(6)">← Go back</button>
+      </div>
+    </section>
 
-                    <p class="form-message" id="signupMessage" role="status"></p>
+    <section class="screen invitation-screen" id="screen8">
+      <div class="invitation-card">
+        <div class="flower" aria-hidden="true">🌷</div>
+        <p class="eyebrow">SAVE THE DATE</p>
+        <h2>Which day works for you?</h2>
+        <p class="supporting-text">Choose a day that makes you happy.</p>
+        <label class="field-label" for="date">Our special day</label>
+        <input type="date" id="date" class="date-input" required>
+        <button type="button" class="primary-button" onclick="saveDate()">Next 💕</button>
+        <button type="button" class="back-button" onclick="nextScreen(7)">← Go back</button>
+      </div>
+    </section>
 
-                    <button type="submit" class="primary-button">
-                        Create account <span aria-hidden="true">→</span>
-                    </button>
-                </form>
+    <section class="screen invitation-screen" id="screen9">
+      <div class="invitation-card">
+        <div class="flower" aria-hidden="true">🌹</div>
+        <p class="eyebrow">TIME FOR US</p>
+        <h2>What time works best?</h2>
+        <p class="supporting-text">Let's choose a time we can both enjoy.</p>
+        <label class="field-label" for="time">Our time</label>
+        <input type="time" id="time" class="date-input" required>
+        <button type="button" class="primary-button" onclick="saveTime()">Next ✨</button>
+        <button type="button" class="back-button" onclick="nextScreen(8)">← Go back</button>
+      </div>
+    </section>
 
-                <p class="auth-switch">
-                    Already have an account?
-                    <button type="button" class="text-button" id="showLogin">
-                        Sign in
-                    </button>
-                </p>
-            </div>
-        </section>
+    <section class="screen invitation-screen" id="screen10">
+      <div class="invitation-card">
+        <div class="flower" aria-hidden="true">💐</div>
+        <p class="eyebrow">JUST LOOK AT US, PLANNING THINGS</p>
+        <h2>Our Date Plan <span>❤️</span></h2>
+        <p class="supporting-text">Here's the plan you've put together.</p>
+        <div class="summary">
+          <p><span>📍</span><strong>Place</strong><span id="summaryPlace">Not selected</span></p>
+          <p><span>🍕</span><strong>Food</strong><span id="summaryFood">Not selected</span></p>
+          <p><span>🚗</span><strong>Travel</strong><span id="summaryTravel">Not selected</span></p>
+          <p><span>📅</span><strong>Date</strong><span id="summaryDate">Not selected</span></p>
+          <p><span>⏰</span><strong>Time</strong><span id="summaryTime">Not selected</span></p>
+        </div>
+        <button type="button" class="primary-button" onclick="confirmDate()">Yes, I confirm ❤️</button>
+        <button type="button" class="back-button" onclick="nextScreen(9)">← Go back</button>
+      </div>
+    </section>
 
-        <!-- INVITATION EXPERIENCE -->
-        <section class="screen invitation-screen" id="screen1">
-            <div class="invitation-card">
-                <div class="step-indicator">A LITTLE SURPRISE <span>♡</span></div>
+    <section class="screen invitation-screen" id="screen11">
+      <div class="invitation-card final-card">
+        <div class="flower" aria-hidden="true">💖</div>
+        <p class="eyebrow">A LITTLE MEMORY IN THE MAKING</p>
+        <h1>It's a <span>Date!</span> ❤️</h1>
+        <p id="finalGreeting">I can't wait to spend some time with you.</p>
+        <div class="big-heart" aria-hidden="true">♥</div>
+        <p class="supporting-text">Here's to lovely moments and happy memories.</p>
+        <div class="love-note">
+          <h2>A little note for you</h2>
+          <p id="loveParagraph">My love, you bring so much happiness into my life. Every moment with you is special, and even the simplest day feels beautiful when I get to share it with you. I want to make more memories with you, see you smile, hold your hand, and remind you how deeply you are loved. I hope this little invitation makes you smile, because your happiness means so much to me. I love you more than words can ever say. ❤️🌹</p>
+        </div>
+      </div>
+    </section>
 
-                <div class="flower" aria-hidden="true">🌸</div>
+    <section class="screen invitation-screen" id="noScreen">
+      <div class="invitation-card">
+        <div class="flower" aria-hidden="true">🌷</div>
+        <h2>No worries <span>♡</span></h2>
+        <p>Thank you for being honest. I still hope you have a beautiful day.</p>
+        <p class="supporting-text">Your comfort matters, always.</p>
+      </div>
+    </section>
+  </main>
 
-                <p class="small-text">Just one little question...</p>
-
-                <h1>How are you doing,<br><span>Gorgeous?</span> ❤️</h1>
-
-                <p class="supporting-text">
-                    I hope this little surprise brings a smile to your face.
-                </p>
-
-                <button type="button" class="primary-button" onclick="nextScreen(2)">
-                    Fine <span>💗</span>
-                </button>
-
-                <p class="card-footer">Made with a little extra love</p>
-            </div>
-        </section>
-
-        <section class="screen invitation-screen" id="screen2">
-            <div class="invitation-card">
-                <div class="step-indicator">A LITTLE SURPRISE <span>♡</span></div>
-                <div class="flower" aria-hidden="true">🌷</div>
-
-                <p class="eyebrow">A LITTLE CONFESSION</p>
-                <h2>I want to say something...</h2>
-
-                <p>I've wanted to tell you something for many days, but I didn't have the courage.</p>
-                <p>That's why I chose this little way to say it.</p>
-                <p>So if you're ready to hear what's been on my mind...</p>
-
-                <button type="button" class="primary-button" onclick="nextScreen(3)">
-                    Tell me more <span>💕</span>
-                </button>
-
-                <p class="card-footer">Something from the heart</p>
-            </div>
-        </section>
-
-        <section class="screen invitation-screen" id="screen3">
-            <div class="invitation-card">
-                <div class="step-indicator">THE BIG QUESTION <span>♡</span></div>
-                <div class="flower" aria-hidden="true">🌹</div>
-
-                <p class="eyebrow">HERE GOES NOTHING...</p>
-                <h1>Would you like to<br><span>go on a date with me?</span> ❤️</h1>
-
-                <p class="supporting-text">No pressure. Just an honest little question.</p>
-
-                <div class="choice-buttons">
-                    <button type="button" class="primary-button" onclick="nextScreen(4)">
-                        Yes, I'd love to! 💗
-                    </button>
-
-                    <button type="button" class="secondary-button no-button" onclick="noThanks()">
-                        No, thank you
-                    </button>
-                </div>
-
-                <p class="card-footer">Your answer is always yours to choose.</p>
-            </div>
-        </section>
-
-        <section class="screen invitation-screen" id="screen4">
-            <div class="invitation-card">
-                <div class="flower" aria-hidden="true">🌸</div>
-                <p class="eyebrow">WELL, THIS IS EXCITING</p>
-                <h1>Yay! <span>❤️</span></h1>
-                <p>Let's plan a little moment that we'll both remember.</p>
-
-                <button type="button" class="primary-button" onclick="nextScreen(5)">
-                    Let's plan it <span>✨</span>
-                </button>
-            </div>
-        </section>
-
-        <section class="screen invitation-screen" id="screen5">
-            <div class="invitation-card">
-                <div class="flower" aria-hidden="true">🌷</div>
-                <p class="eyebrow">FIRST THINGS FIRST</p>
-                <h2>Where should we go?</h2>
-                <p class="supporting-text">Pick the kind of place that feels right.</p>
-
-                <div class="options">
-                    <button type="button" class="option-button" onclick="selectOption('place','Cute Café')">☕ <span>Cute Café</span></button>
-                    <button type="button" class="option-button" onclick="selectOption('place','Dinner')">🍽️ <span>Dinner</span></button>
-                    <button type="button" class="option-button" onclick="selectOption('place','Park')">🌳 <span>A peaceful park</span></button>
-                    <button type="button" class="option-button" onclick="selectOption('place','Movie')">🎬 <span>A movie</span></button>
-                </div>
-                <button type="button" class="back-button" onclick="nextScreen(4)">← Go back</button>
-            </div>
-        </section>
-
-        <section class="screen invitation-screen" id="screen6">
-            <div class="invitation-card">
-                <div class="flower" aria-hidden="true">🌹</div>
-                <p class="eyebrow">A LITTLE SOMETHING TO EAT</p>
-                <h2>What sounds delicious?</h2>
-                <p class="supporting-text">Because good food makes good moments.</p>
-
-                <div class="options">
-                    <button type="button" class="option-button" onclick="selectOption('food','Pizza')">🍕 <span>Pizza</span></button>
-                    <button type="button" class="option-button" onclick="selectOption('food','Burgers')">🍔 <span>Burgers</span></button>
-                    <button type="button" class="option-button" onclick="selectOption('food','Pasta')">🍝 <span>Pasta</span></button>
-                    <button type="button" class="option-button" onclick="selectOption('food','Coffee & Dessert')">🍰 <span>Coffee & dessert</span></button>
-                </div>
-                <button type="button" class="back-button" onclick="nextScreen(5)">← Go back</button>
-            </div>
-        </section>
-
-        <section class="screen invitation-screen" id="screen7">
-            <div class="invitation-card">
-                <div class="flower" aria-hidden="true">🌸</div>
-                <p class="eyebrow">THE JOURNEY</p>
-                <h2>How shall we get there?</h2>
-                <p class="supporting-text">It's the company that matters most.</p>
-
-                <div class="options">
-                    <button type="button" class="option-button" onclick="selectOption('travel','Car')">🚗 <span>Car</span></button>
-                    <button type="button" class="option-button" onclick="selectOption('travel','Bike')">🏍️ <span>Bike</span></button>
-                    <button type="button" class="option-button" onclick="selectOption('travel','Ride')">🚕 <span>Ride</span></button>
-                    <button type="button" class="option-button" onclick="selectOption('travel','Decide Together')">💕 <span>Decide together</span></button>
-                </div>
-                <button type="button" class="back-button" onclick="nextScreen(6)">← Go back</button>
-            </div>
-        </section>
-
-        <section class="screen invitation-screen" id="screen8">
-            <div class="invitation-card">
-                <div class="flower" aria-hidden="true">🌷</div>
-                <p class="eyebrow">SAVE THE DATE</p>
-                <h2>Which day works for you?</h2>
-                <p class="supporting-text">Choose a day that makes you happy.</p>
-
-                <label class="field-label" for="date">Our special day</label>
-                <input type="date" id="date" class="date-input" required>
-
-                <button type="button" class="primary-button" onclick="saveDate()">
-                    Next <span>💕</span>
-                </button>
-                <button type="button" class="back-button" onclick="nextScreen(7)">← Go back</button>
-            </div>
-        </section>
-
-        <section class="screen invitation-screen" id="screen9">
-            <div class="invitation-card">
-                <div class="flower" aria-hidden="true">🌹</div>
-                <p class="eyebrow">TIME FOR US</p>
-                <h2>What time works best?</h2>
-                <p class="supporting-text">Let's choose a time we can both enjoy.</p>
-
-                <label class="field-label" for="time">Our time</label>
-                <input type="time" id="time" class="date-input" required>
-
-                <button type="button" class="primary-button" onclick="saveTime()">
-                    Next <span>✨</span>
-                </button>
-                <button type="button" class="back-button" onclick="nextScreen(8)">← Go back</button>
-            </div>
-        </section>
-
-        <section class="screen invitation-screen" id="screen10">
-            <div class="invitation-card">
-                <div class="flower" aria-hidden="true">💐</div>
-                <p class="eyebrow">JUST LOOK AT US, PLANNING THINGS</p>
-                <h2>Our Date Plan <span>❤️</span></h2>
-                <p class="supporting-text">Here's our little plan. Does everything look good?</p>
-
-                <div class="summary">
-                    <p><span>📍</span><strong>Place</strong><span id="summaryPlace">Not selected</span></p>
-                    <p><span>🍕</span><strong>Food</strong><span id="summaryFood">Not selected</span></p>
-                    <p><span>🚗</span><strong>Travel</strong><span id="summaryTravel">Not selected</span></p>
-                    <p><span>📅</span><strong>Date</strong><span id="summaryDate">Not selected</span></p>
-                    <p><span>⏰</span><strong>Time</strong><span id="summaryTime">Not selected</span></p>
-                </div>
-
-                <button type="button" class="primary-button" onclick="confirmDate()">
-                    Confirm our date <span>💕</span>
-                </button>
-                <button type="button" class="back-button" onclick="nextScreen(9)">← Make a change</button>
-            </div>
-        </section>
-
-        <section class="screen invitation-screen" id="screen11">
-            <div class="invitation-card final-card">
-                <div class="flower" aria-hidden="true">💖</div>
-                <p class="eyebrow">A LITTLE MEMORY IN THE MAKING</p>
-                <h1>It's a <span>Date!</span> ❤️</h1>
-                <p>I can't wait to spend some time with you.</p>
-                <div class="big-heart" aria-hidden="true">♥</div>
-                <p class="supporting-text">Here's to lovely moments and happy memories.</p>
-            </div>
-        </section>
-
-        <section class="screen invitation-screen" id="noScreen">
-            <div class="invitation-card">
-                <div class="flower" aria-hidden="true">🌷</div>
-                <h2>No worries <span>♡</span></h2>
-                <p>Thank you for being honest. I still hope you have a beautiful day.</p>
-                <p class="supporting-text">Your comfort matters, always.</p>
-            </div>
-        </section>
-
-    </main>
-
-    <footer class="site-footer">
-        <p>Made with <span>♥</span> and a little bit of magic.</p>
-        <a href="privacy.html">Privacy</a>
-    </footer>
-
-    <!-- The existing date-planning JavaScript -->
-    <script src="script.js"></script>
-
-    <!-- Login and signup UI navigation only.
-         Real authentication will be connected separately. -->
-    <script>
-        (() => {
-            const loginScreen = document.getElementById('loginScreen');
-            const signupScreen = document.getElementById('signupScreen');
-
-            function showAuthScreen(screenToShow) {
-                document.querySelectorAll('.screen').forEach(screen => {
-                    screen.classList.remove('active');
-                });
-
-                screenToShow.classList.add('active');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-
-            document.getElementById('showSignup').addEventListener('click', () => {
-                showAuthScreen(signupScreen);
-            });
-
-            document.getElementById('showLogin').addEventListener('click', () => {
-                showAuthScreen(loginScreen);
-            });
-
-            // These forms are intentionally not connected to a server yet.
-            // Do not collect or store real passwords until secure authentication
-            // has been configured.
-            document.getElementById('loginForm').addEventListener('submit', event => {
-                event.preventDefault();
-                document.getElementById('loginMessage').textContent =
-                    'Secure sign-in is not connected yet. Please complete the authentication setup first.';
-            });
-
-            document.getElementById('signupForm').addEventListener('submit', event => {
-                event.preventDefault();
-                document.getElementById('signupMessage').textContent =
-                    'Account creation is not connected yet. Secure authentication will be configured next.';
-            });
-        })();
-    </script>
+  <footer class="site-footer">
+    <p>Made with <span>♥</span> and a little bit of magic.</p>
+    <a href="privacy.html">Privacy</a>
+  </footer>
+  <script src="script.js"></script>
 </body>
 </html>
-
