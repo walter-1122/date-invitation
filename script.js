@@ -1,6 +1,9 @@
 
- // Date Invitation — Main Website Script
 "use strict";
+
+// ========================================
+// DATE INVITATION — MAIN WEBSITE SCRIPT
+// ========================================
 
 const datePlan = {
     place: "",
@@ -10,19 +13,25 @@ const datePlan = {
     time: ""
 };
 
-// Read the invitation creator's WhatsApp number from the link.
+// Get the creator's WhatsApp number from the invitation URL.
 function getOwnerPhone() {
     const params = new URLSearchParams(window.location.search);
     return (params.get("owner") || "").replace(/\D/g, "");
 }
 
-// Generate a shareable invitation link for the creator.
+// Check whether this page is an invitation link for a recipient.
+function isRecipientInvitation() {
+    const phone = getOwnerPhone();
+    return phone.length >= 8 && phone.length <= 15;
+}
+
+// Generate the shareable invitation link.
 function generateInvitationLink(phoneNumber) {
     const phone = String(phoneNumber || "").replace(/\D/g, "");
 
     if (phone.length < 8 || phone.length > 15) {
         alert("Please enter a valid WhatsApp number with country code ❤️");
-        return;
+        return null;
     }
 
     const link = new URL(window.location.href);
@@ -33,7 +42,7 @@ function generateInvitationLink(phoneNumber) {
     return link.toString();
 }
 
-// Copy a generated invitation link.
+// Create and copy the invitation link.
 async function createInvitationLink() {
     const input =
         document.getElementById("ownerPhone") ||
@@ -51,13 +60,17 @@ async function createInvitationLink() {
 
     try {
         await navigator.clipboard.writeText(link);
-        alert("Your invitation link is ready and copied! ❤️\n\n" + link);
+        alert(
+            "Your invitation link is ready and copied! ❤️\n\n" +
+            link +
+            "\n\nSend this link to your special person."
+        );
     } catch (error) {
         window.prompt("Copy your invitation link:", link);
     }
 }
 
-// Show one screen and hide all others.
+// Show one screen and hide the others.
 function showScreen(screenId) {
     document.querySelectorAll(".screen").forEach(screen => {
         screen.classList.remove("active");
@@ -76,24 +89,31 @@ function nextScreen(screenNumber) {
     showScreen("screen" + screenNumber);
 }
 
+// Start the invitation.
+function openInvitation() {
+    showScreen("screen1");
+}
+
 // Show the response when NO is selected.
 function noThanks() {
     showScreen("noScreen");
 }
 
-// Show the login screen.
+// Keep these functions available if older HTML calls them.
 function showLogin() {
-    showScreen("loginScreen");
+    if (isRecipientInvitation()) {
+        openInvitation();
+    } else {
+        showScreen("loginScreen");
+    }
 }
 
-// Show the signup screen.
 function showSignup() {
-    showScreen("signupScreen");
-}
-
-// Open invitation without requiring the recipient to log in.
-function openInvitation() {
-    showScreen("screen1");
+    if (isRecipientInvitation()) {
+        openInvitation();
+    } else {
+        showScreen("signupScreen");
+    }
 }
 
 // Save place, food, and travel choices.
@@ -102,12 +122,16 @@ function selectOption(type, value) {
 
     datePlan[type] = value;
 
-    if (type === "place") nextScreen(6);
-    else if (type === "food") nextScreen(7);
-    else if (type === "travel") nextScreen(8);
+    if (type === "place") {
+        nextScreen(6);
+    } else if (type === "food") {
+        nextScreen(7);
+    } else if (type === "travel") {
+        nextScreen(8);
+    }
 }
 
-// Save selected date.
+// Save the selected date.
 function saveDate() {
     const dateInput = document.getElementById("date");
 
@@ -120,7 +144,7 @@ function saveDate() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    if (selectedDate < today) {
+    if (Number.isNaN(selectedDate.getTime()) || selectedDate < today) {
         alert("Please choose today or a future date ❤️");
         return;
     }
@@ -129,7 +153,7 @@ function saveDate() {
     nextScreen(9);
 }
 
-// Save selected time.
+// Save the selected time.
 function saveTime() {
     const timeInput = document.getElementById("time");
 
@@ -173,11 +197,12 @@ function showSummary() {
     nextScreen(10);
 }
 
-// Format date.
+// Format a date for display.
 function formatDate(value) {
     if (!value) return "Not selected";
 
     const date = new Date(value + "T00:00:00");
+
     if (Number.isNaN(date.getTime())) return "Not selected";
 
     return date.toLocaleDateString("en-US", {
@@ -188,12 +213,13 @@ function formatDate(value) {
     });
 }
 
-// Format time.
+// Format a time for display.
 function formatTime(value) {
     if (!value || !value.includes(":")) return "Not selected";
 
     const [hours, minutes] = value.split(":").map(Number);
     const date = new Date();
+
     date.setHours(hours, minutes, 0, 0);
 
     return date.toLocaleTimeString("en-US", {
@@ -220,7 +246,10 @@ function confirmDate() {
     const ownerPhone = getOwnerPhone();
 
     if (!ownerPhone || ownerPhone.length < 8 || ownerPhone.length > 15) {
-        alert("This invitation link is missing a valid creator WhatsApp number. Please ask them for a new link ❤️");
+        alert(
+            "This invitation link is missing a valid creator WhatsApp number. " +
+            "Please ask them for a new link ❤️"
+        );
         return;
     }
 
@@ -243,13 +272,51 @@ function confirmDate() {
 
 // Initialize the page.
 document.addEventListener("DOMContentLoaded", () => {
-    const activeScreen = document.querySelector(".screen.active");
+    const recipientLink = isRecipientInvitation();
 
-    if (!activeScreen) {
-        const startScreen = document.getElementById("screen1") ||
-                            document.getElementById("loginScreen");
+    if (recipientLink) {
+        // A recipient opening a shared invitation should see screen 1.
+        document.querySelectorAll(".screen").forEach(screen => {
+            screen.classList.remove("active");
+        });
 
-        if (startScreen) startScreen.classList.add("active");
+        const firstScreen = document.getElementById("screen1");
+
+        if (firstScreen) {
+            firstScreen.classList.add("active");
+        }
+    } else {
+        // The creator should see the invitation creation form.
+        const loginScreen = document.getElementById("loginScreen");
+
+        if (loginScreen) {
+            document.querySelectorAll(".screen").forEach(screen => {
+                screen.classList.remove("active");
+            });
+
+            loginScreen.classList.add("active");
+        } else {
+            const firstScreen = document.getElementById("screen1");
+
+            if (firstScreen) firstScreen.classList.add("active");
+        }
+    }
+
+    // Stop old demo login/signup forms from showing the old alert.
+    const loginForm = document.querySelector("#loginScreen form");
+    const signupForm = document.querySelector("#signupScreen form");
+
+    if (loginForm && !loginForm.querySelector("#ownerPhone")) {
+        loginForm.addEventListener("submit", event => {
+            event.preventDefault();
+            alert("Please use the WhatsApp invitation form to create your link ❤️");
+        });
+    }
+
+    if (signupForm) {
+        signupForm.addEventListener("submit", event => {
+            event.preventDefault();
+            alert("Account creation is not needed to use this invitation ❤️");
+        });
     }
 });
-
