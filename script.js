@@ -1,6 +1,5 @@
 
-// Date Invitation — Main Website Script
-
+ // Date Invitation — Main Website Script
 "use strict";
 
 const datePlan = {
@@ -11,9 +10,52 @@ const datePlan = {
     time: ""
 };
 
-// Change this to your WhatsApp number with country code.
-// Do not include +, spaces, or dashes.
-const yourWhatsAppNumber = "923214825245";
+// Read the invitation creator's WhatsApp number from the link.
+function getOwnerPhone() {
+    const params = new URLSearchParams(window.location.search);
+    return (params.get("owner") || "").replace(/\D/g, "");
+}
+
+// Generate a shareable invitation link for the creator.
+function generateInvitationLink(phoneNumber) {
+    const phone = String(phoneNumber || "").replace(/\D/g, "");
+
+    if (phone.length < 8 || phone.length > 15) {
+        alert("Please enter a valid WhatsApp number with country code ❤️");
+        return;
+    }
+
+    const link = new URL(window.location.href);
+    link.search = "";
+    link.hash = "";
+    link.searchParams.set("owner", phone);
+
+    return link.toString();
+}
+
+// Copy a generated invitation link.
+async function createInvitationLink() {
+    const input =
+        document.getElementById("ownerPhone") ||
+        document.getElementById("whatsappNumber") ||
+        document.getElementById("phoneNumber");
+
+    if (!input || !input.value.trim()) {
+        alert("Please enter your WhatsApp number with country code ❤️");
+        return;
+    }
+
+    const link = generateInvitationLink(input.value);
+
+    if (!link) return;
+
+    try {
+        await navigator.clipboard.writeText(link);
+        alert("Your invitation link is ready and copied! ❤️\n\n" + link);
+    } catch (error) {
+        window.prompt("Copy your invitation link:", link);
+    }
+}
 
 // Show one screen and hide all others.
 function showScreen(screenId) {
@@ -49,29 +91,20 @@ function showSignup() {
     showScreen("signupScreen");
 }
 
-// Open the invitation after a successful authentication flow.
-// NOTE: This function does not verify a real account.
+// Open invitation without requiring the recipient to log in.
 function openInvitation() {
     showScreen("screen1");
 }
 
 // Save place, food, and travel choices.
 function selectOption(type, value) {
-    const allowedTypes = ["place", "food", "travel"];
-
-    if (!allowedTypes.includes(type)) {
-        return;
-    }
+    if (!["place", "food", "travel"].includes(type)) return;
 
     datePlan[type] = value;
 
-    if (type === "place") {
-        nextScreen(6);
-    } else if (type === "food") {
-        nextScreen(7);
-    } else if (type === "travel") {
-        nextScreen(8);
-    }
+    if (type === "place") nextScreen(6);
+    else if (type === "food") nextScreen(7);
+    else if (type === "travel") nextScreen(8);
 }
 
 // Save selected date.
@@ -111,7 +144,7 @@ function saveTime() {
 
 // Display the date summary.
 function showSummary() {
-    const requiredChoices = [
+    const choices = [
         datePlan.place,
         datePlan.food,
         datePlan.travel,
@@ -119,12 +152,12 @@ function showSummary() {
         datePlan.time
     ];
 
-    if (requiredChoices.some(value => !value)) {
+    if (choices.some(value => !value)) {
         alert("Please complete all the date details first ❤️");
         return;
     }
 
-    const summaryFields = {
+    const fields = {
         summaryPlace: datePlan.place,
         summaryFood: datePlan.food,
         summaryTravel: datePlan.travel,
@@ -132,28 +165,22 @@ function showSummary() {
         summaryTime: formatTime(datePlan.time)
     };
 
-    Object.entries(summaryFields).forEach(([id, value]) => {
+    Object.entries(fields).forEach(([id, value]) => {
         const element = document.getElementById(id);
-
-        if (element) {
-            element.textContent = value;
-        }
+        if (element) element.textContent = value;
     });
 
     nextScreen(10);
 }
 
-// Format date nicely.
-function formatDate(dateValue) {
-    if (!dateValue) return "Not selected";
+// Format date.
+function formatDate(value) {
+    if (!value) return "Not selected";
 
-    const selectedDate = new Date(dateValue + "T00:00:00");
+    const date = new Date(value + "T00:00:00");
+    if (Number.isNaN(date.getTime())) return "Not selected";
 
-    if (Number.isNaN(selectedDate.getTime())) {
-        return "Not selected";
-    }
-
-    return selectedDate.toLocaleDateString("en-US", {
+    return date.toLocaleDateString("en-US", {
         weekday: "long",
         month: "long",
         day: "numeric",
@@ -161,15 +188,12 @@ function formatDate(dateValue) {
     });
 }
 
-// Format time nicely.
-function formatTime(timeValue) {
-    if (!timeValue || !timeValue.includes(":")) {
-        return "Not selected";
-    }
+// Format time.
+function formatTime(value) {
+    if (!value || !value.includes(":")) return "Not selected";
 
-    const [hours, minutes] = timeValue.split(":").map(Number);
+    const [hours, minutes] = value.split(":").map(Number);
     const date = new Date();
-
     date.setHours(hours, minutes, 0, 0);
 
     return date.toLocaleTimeString("en-US", {
@@ -178,16 +202,25 @@ function formatTime(timeValue) {
     });
 }
 
-// Confirm the date and prepare the WhatsApp message.
+// Confirm the date and open the creator's WhatsApp chat.
 function confirmDate() {
-    if (
-        !datePlan.place ||
-        !datePlan.food ||
-        !datePlan.travel ||
-        !datePlan.date ||
-        !datePlan.time
-    ) {
+    const choices = [
+        datePlan.place,
+        datePlan.food,
+        datePlan.travel,
+        datePlan.date,
+        datePlan.time
+    ];
+
+    if (choices.some(value => !value)) {
         alert("Please complete your date plan first ❤️");
+        return;
+    }
+
+    const ownerPhone = getOwnerPhone();
+
+    if (!ownerPhone || ownerPhone.length < 8 || ownerPhone.length > 15) {
+        alert("This invitation link is missing a valid creator WhatsApp number. Please ask them for a new link ❤️");
         return;
     }
 
@@ -202,32 +235,21 @@ function confirmDate() {
         "Can't wait! ❤️";
 
     const whatsappURL =
-        "https://wa.me/" +
-        yourWhatsAppNumber +
-        "?text=" +
-        encodeURIComponent(message);
+        "https://wa.me/" + ownerPhone +
+        "?text=" + encodeURIComponent(message);
 
-    window.open(whatsappURL, "_blank", "noopener,noreferrer");
-
-    nextScreen(11);
+    window.location.href = whatsappURL;
 }
 
-// Keep all screens and choices initialized on page load.
+// Initialize the page.
 document.addEventListener("DOMContentLoaded", () => {
     const activeScreen = document.querySelector(".screen.active");
 
-    // If no screen is active, start at the login screen.
     if (!activeScreen) {
-        const loginScreen = document.getElementById("loginScreen");
+        const startScreen = document.getElementById("screen1") ||
+                            document.getElementById("loginScreen");
 
-        if (loginScreen) {
-            loginScreen.classList.add("active");
-        } else {
-            const firstScreen = document.getElementById("screen1");
-
-            if (firstScreen) {
-                firstScreen.classList.add("active");
-            }
-        }
+        if (startScreen) startScreen.classList.add("active");
     }
 });
+
