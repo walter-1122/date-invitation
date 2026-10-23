@@ -1,3 +1,9 @@
+
+/* ========================================
+   DATE INVITATION — PREMIUM DESIGN
+   Theme: Romantic Blush Pink
+======================================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -7,99 +13,242 @@
 :root {
     --pink: #e88ca8;
     --dark-pink: #c85f7e;
+    --deep-pink: #a83d60;
     --light-pink: #fff0f5;
     --soft-pink: #fde1e9;
     --text: #4a3038;
+    --muted: #806570;
     --white: #ffffff;
+    --glass: rgba(255, 255, 255, 0.78);
+    --border: rgba(220, 135, 160, 0.27);
+    --shadow: 0 25px 80px rgba(151, 66, 95, 0.13);
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
     min-height: 100vh;
     font-family: Georgia, "Times New Roman", serif;
-    background:
-        radial-gradient(circle at 20% 20%, #ffe8f0 0, transparent 30%),
-        radial-gradient(circle at 80% 80%, #ffdfe9 0, transparent 32%),
-        linear-gradient(135deg, #ffffff, #fff5f8);
     color: var(--text);
     overflow-x: hidden;
+    background:
+        radial-gradient(ellipse at 12% 15%, rgba(255, 207, 223, 0.65), transparent 35%),
+        radial-gradient(ellipse at 88% 82%, rgba(255, 218, 231, 0.72), transparent 35%),
+        linear-gradient(135deg, #fffafd 0%, #fff1f6 48%, #fff8fb 100%);
+    background-attachment: fixed;
 }
 
-/* Main card */
+/* Background atmosphere */
 
-.invitation {
+.ambient,
+.ambient::before,
+.ambient::after {
+    position: fixed;
+    pointer-events: none;
+    border-radius: 50%;
+    filter: blur(2px);
+    z-index: 0;
+}
+
+.ambient {
+    width: 280px;
+    height: 280px;
+    top: 12%;
+    left: -140px;
+    background: rgba(255, 190, 211, 0.22);
+    animation: ambientFloat 12s ease-in-out infinite alternate;
+}
+
+.ambient::before {
+    content: "";
+    width: 220px;
+    height: 220px;
+    top: 55vh;
+    left: 75vw;
+    background: rgba(232, 140, 168, 0.13);
+}
+
+.ambient::after {
+    content: "";
+    width: 140px;
+    height: 140px;
+    top: 30vh;
+    left: 40vw;
+    background: rgba(255, 221, 232, 0.4);
+}
+
+/* Header */
+
+.site-header {
+    position: relative;
+    z-index: 3;
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    padding: 25px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.site-header .brand,
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--deep-pink);
+    font-size: 21px;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+    text-decoration: none;
+}
+
+.brand-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 39px;
+    height: 39px;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #f5b4c8, #cf6888);
+    color: white;
+    box-shadow: 0 8px 20px rgba(200, 95, 126, 0.2);
+}
+
+.header-note {
+    color: #986b7b;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+}
+
+/* Main layout */
+
+.invitation,
+.page-shell {
     position: relative;
     z-index: 2;
-    min-height: 100vh;
+    width: 100%;
+    min-height: 75vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 30px 20px;
+    padding: 28px 20px 55px;
 }
 
-/* Screens */
+/* All screens */
 
 .screen {
     display: none;
+    position: relative;
     width: min(680px, 100%);
+    padding: clamp(30px, 6vw, 58px) clamp(20px, 5vw, 42px);
     text-align: center;
-    padding: 55px 35px;
-    background: rgba(255, 255, 255, 0.82);
-    border: 1px solid rgba(232, 140, 168, 0.25);
+    background: var(--glass);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    outline: 1px solid var(--border);
     border-radius: 32px;
-    box-shadow:
-        0 25px 70px rgba(200, 95, 126, 0.13),
-        0 5px 20px rgba(100, 50, 70, 0.06);
-    backdrop-filter: blur(12px);
-    animation: fadeIn 0.7s ease;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    animation: screenEnter 0.55s cubic-bezier(0.2, 0.75, 0.25, 1) both;
 }
 
 .screen.active {
     display: block;
 }
 
-/* Flowers */
+/* Auth screen sizing */
 
-.flower {
-    font-size: 52px;
-    margin-bottom: 20px;
-    animation: floatFlower 3s ease-in-out infinite;
+#loginScreen,
+#signupScreen {
+    width: min(480px, 100%);
+    padding: clamp(28px, 5vw, 44px);
 }
 
-/* Text */
+.auth-card {
+    width: 100%;
+}
+
+.auth-icon {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 22px;
+    border: 1px solid rgba(232, 140, 168, 0.25);
+    border-radius: 25px;
+    background: linear-gradient(145deg, #fff8fb, #ffe3ec);
+    box-shadow: 0 12px 30px rgba(200, 95, 126, 0.12);
+    font-size: 35px;
+    animation: floatFlower 3.5s ease-in-out infinite;
+}
+
+.auth-card h1,
+#loginScreen h1,
+#signupScreen h1 {
+    font-size: clamp(32px, 6vw, 43px);
+    margin-bottom: 12px;
+}
+
+.auth-card > p,
+#loginScreen > p,
+#signupScreen > p {
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+}
+
+/* Flowers and decorative elements */
+
+.flower {
+    font-size: clamp(40px, 7vw, 54px);
+    margin-bottom: 22px;
+    animation: floatFlower 3.5s ease-in-out infinite;
+}
 
 .small-text {
     color: var(--dark-pink);
-    font-size: 15px;
-    letter-spacing: 2px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
     text-transform: uppercase;
     margin-bottom: 18px;
 }
 
+/* Typography */
+
 h1 {
     font-size: clamp(38px, 7vw, 65px);
-    line-height: 1.08;
+    line-height: 1.12;
     font-weight: 500;
+    letter-spacing: -1.4px;
     color: var(--text);
-    margin-bottom: 28px;
+    margin-bottom: 25px;
 }
 
 h1 span {
-    color: var(--pink);
+    color: var(--dark-pink);
     font-style: italic;
 }
 
 h2 {
-    font-size: clamp(30px, 5vw, 45px);
+    font-size: clamp(29px, 5vw, 44px);
+    line-height: 1.2;
     font-weight: 500;
-    margin-bottom: 25px;
+    letter-spacing: -0.6px;
+    margin-bottom: 23px;
     color: var(--text);
 }
 
 p {
-    font-family: Arial, sans-serif;
-    font-size: 17px;
-    line-height: 1.8;
-    color: #755a63;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 1.85;
+    color: var(--muted);
     margin: 12px auto;
     max-width: 520px;
 }
@@ -107,105 +256,240 @@ p {
 /* Buttons */
 
 button {
-    border: none;
+    border: 0;
     cursor: pointer;
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    font-weight: 600;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
     color: white;
-    background: linear-gradient(135deg, #e98eaa, #c96281);
-    padding: 15px 34px;
+    background: linear-gradient(135deg, #ec9bb5 0%, #cc6686 100%);
+    padding: 15px 30px;
     border-radius: 50px;
-    margin-top: 22px;
-    box-shadow: 0 12px 28px rgba(200, 95, 126, 0.25);
+    margin-top: 20px;
+    box-shadow: 0 10px 25px rgba(200, 95, 126, 0.22);
     transition:
         transform 0.25s ease,
-        box-shadow 0.25s ease;
+        box-shadow 0.25s ease,
+        filter 0.25s ease;
 }
 
 button:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 17px 35px rgba(200, 95, 126, 0.32);
+    transform: translateY(-3px);
+    filter: saturate(1.08);
+    box-shadow: 0 15px 32px rgba(200, 95, 126, 0.3);
 }
 
 button:active {
-    transform: scale(0.96);
+    transform: scale(0.97);
 }
 
-/* Yes / No */
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+    outline: 3px solid rgba(200, 95, 126, 0.4);
+    outline-offset: 4px;
+}
+
+.primary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 51px;
+    padding: 15px 30px;
+    color: #fff;
+    background: linear-gradient(135deg, #e99ab3, #c45b7c);
+}
+
+.secondary-button,
+.no-button {
+    color: var(--dark-pink);
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid #efbdcc;
+    box-shadow: none;
+}
+
+.secondary-button:hover,
+.no-button:hover {
+    color: white;
+    background: linear-gradient(135deg, #e99ab3, #c45b7c);
+}
 
 .choice-buttons {
     display: flex;
+    align-items: center;
     justify-content: center;
-    gap: 18px;
+    gap: 15px;
     flex-wrap: wrap;
+    margin-top: 25px;
 }
 
-.no-button {
-    color: var(--dark-pink);
-    background: white;
-    border: 1px solid #efb2c3;
-    box-shadow: none;
-}
-
-/* Options */
+/* Option selection */
 
 .options {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    max-width: 500px;
-    margin: 30px auto 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    width: min(500px, 100%);
+    margin: 28px auto 0;
 }
 
-.options button {
+.options button,
+.option-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 62px;
     margin: 0;
+    padding: 16px 14px;
     color: var(--text);
-    background: #fff8fa;
-    border: 1px solid #f2c4d1;
-    box-shadow: none;
+    background: rgba(255, 249, 251, 0.94);
+    border: 1px solid #f0c5d2;
+    border-radius: 18px;
+    box-shadow: 0 5px 15px rgba(120, 50, 75, 0.035);
 }
 
-.options button:hover {
+.options button:hover,
+.option-button:hover,
+.options button.selected,
+.option-button.selected {
     color: white;
-    background: linear-gradient(135deg, #e98eaa, #c96281);
+    border-color: transparent;
+    background: linear-gradient(135deg, #e99ab3, #c45b7c);
+    box-shadow: 0 10px 24px rgba(200, 95, 126, 0.2);
 }
 
-/* Date & time */
+/* Form controls */
+
+input,
+textarea,
+select {
+    max-width: 100%;
+    font-family: Arial, Helvetica, sans-serif;
+}
 
 input[type="date"],
 input[type="time"] {
+    display: block;
     width: min(330px, 100%);
-    padding: 16px 18px;
-    border: 1px solid #edb4c5;
+    min-height: 54px;
+    margin: 16px auto;
+    padding: 15px 17px;
+    border: 1px solid #edbdcb;
     border-radius: 15px;
-    background: white;
+    background: rgba(255, 255, 255, 0.92);
     color: var(--text);
     font-size: 16px;
     outline: none;
-    margin: 15px 0;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-input:focus {
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input:not([type]) {
+    display: block;
+    width: 100%;
+    min-height: 53px;
+    margin: 10px 0 16px;
+    padding: 15px 17px;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #efd0da;
+    border-radius: 15px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+input::placeholder {
+    color: #b295a0;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
     border-color: var(--pink);
-    box-shadow: 0 0 0 4px rgba(232, 140, 168, 0.12);
+    box-shadow: 0 0 0 4px rgba(232, 140, 168, 0.14);
+    background: white;
 }
 
-/* Summary */
+.auth-card label,
+#loginScreen label,
+#signupScreen label {
+    display: block;
+    margin: 13px 0 7px;
+    color: #76515f;
+    text-align: left;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.auth-card form button,
+#loginForm button,
+#signupForm button {
+    width: 100%;
+    margin-top: 12px;
+}
+
+.auth-switch {
+    margin-top: 22px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+.auth-switch button,
+.text-button {
+    display: inline;
+    margin: 0;
+    padding: 3px 5px;
+    color: var(--dark-pink);
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    font-size: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.auth-switch button:hover,
+.text-button:hover {
+    color: var(--deep-pink);
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+}
+
+.form-message,
+#loginMessage,
+#signupMessage {
+    min-height: 20px;
+    margin: 12px 0 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* Summary card */
 
 .summary {
-    max-width: 430px;
+    width: min(440px, 100%);
     margin: 25px auto;
-    padding: 22px;
-    border-radius: 20px;
-    background: #fff7f9;
-    border: 1px solid #f3c7d3;
+    padding: 23px;
+    text-align: left;
+    border-radius: 22px;
+    background: rgba(255, 247, 250, 0.94);
+    border: 1px solid #f0c7d3;
+    box-shadow: 0 10px 28px rgba(150, 60, 90, 0.06);
 }
 
 .summary p {
-    text-align: left;
-    font-size: 15px;
-    margin: 10px 0;
+    margin: 11px 0;
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
 }
 
 .summary strong {
@@ -215,10 +499,12 @@ input:focus {
 /* Final heart */
 
 .big-heart {
-    font-size: 90px;
+    display: inline-block;
+    font-size: clamp(70px, 12vw, 100px);
     color: #e87899;
-    margin-top: 25px;
-    animation: heartbeat 1.2s infinite;
+    margin-top: 24px;
+    filter: drop-shadow(0 10px 20px rgba(200, 95, 126, 0.18));
+    animation: heartbeat 1.35s ease-in-out infinite;
 }
 
 /* Floating hearts */
@@ -235,12 +521,13 @@ input:focus {
 .hearts::after {
     content: "♥  ♡  ♥  ♡  ♥  ♡";
     position: absolute;
-    left: 0;
-    width: 100%;
-    color: rgba(232, 140, 168, 0.22);
+    left: -5%;
+    width: 110%;
+    color: rgba(232, 140, 168, 0.2);
     font-size: 25px;
     letter-spacing: 35px;
-    animation: heartsMove 14s linear infinite;
+    white-space: nowrap;
+    animation: heartsMove 16s linear infinite;
 }
 
 .hearts::before {
@@ -249,16 +536,40 @@ input:focus {
 
 .hearts::after {
     top: 110%;
-    animation-delay: 6s;
     font-size: 18px;
+    animation-delay: 7s;
+}
+
+/* Footer */
+
+.site-footer {
+    position: relative;
+    z-index: 2;
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    padding: 10px 22px 28px;
+    text-align: center;
+    color: #a17b89;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.site-footer a {
+    color: var(--dark-pink);
+    text-decoration: none;
+}
+
+.site-footer a:hover {
+    text-decoration: underline;
 }
 
 /* Animations */
 
-@keyframes fadeIn {
+@keyframes screenEnter {
     from {
         opacity: 0;
-        transform: translateY(20px) scale(0.98);
+        transform: translateY(18px) scale(0.985);
     }
 
     to {
@@ -273,7 +584,7 @@ input:focus {
     }
 
     50% {
-        transform: translateY(-8px) rotate(2deg);
+        transform: translateY(-7px) rotate(2deg);
     }
 }
 
@@ -283,7 +594,7 @@ input:focus {
     }
 
     15% {
-        transform: scale(1.15);
+        transform: scale(1.12);
     }
 
     30% {
@@ -291,7 +602,7 @@ input:focus {
     }
 
     45% {
-        transform: scale(1.12);
+        transform: scale(1.09);
     }
 }
 
@@ -301,40 +612,101 @@ input:focus {
     }
 
     to {
-        transform: translateY(-120vh);
+        transform: translateY(-125vh);
     }
 }
 
-/* Mobile */
+@keyframes ambientFloat {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(50px, 35px) scale(1.12);
+    }
+}
+
+/* Responsive design */
 
 @media (max-width: 600px) {
+    .site-header {
+        padding: 19px 18px;
+    }
 
-    .invitation {
-        padding: 15px;
+    .site-header .brand,
+    .brand {
+        font-size: 18px;
+    }
+
+    .header-note {
+        max-width: 130px;
+        text-align: right;
+        font-size: 10px;
+        letter-spacing: 1px;
+    }
+
+    .invitation,
+    .page-shell {
+        min-height: 78vh;
+        padding: 18px 15px 35px;
     }
 
     .screen {
-        padding: 42px 20px;
+        padding: 37px 21px;
         border-radius: 25px;
     }
 
+    #loginScreen,
+    #signupScreen {
+        padding: 30px 22px;
+    }
+
     h1 {
-        font-size: 39px;
+        font-size: clamp(35px, 10vw, 45px);
+        letter-spacing: -0.8px;
     }
 
     h2 {
-        font-size: 31px;
+        font-size: clamp(28px, 8vw, 34px);
     }
 
     p {
-        font-size: 16px;
+        font-size: 15px;
+        line-height: 1.8;
     }
 
     .options {
         grid-template-columns: 1fr;
+        gap: 11px;
+    }
+
+    .options button {
+        min-height: 56px;
+    }
+
+    .choice-buttons {
+        gap: 10px;
     }
 
     .choice-buttons button {
-        width: 170px;
+        min-width: 125px;
+        padding: 14px 22px;
+    }
+
+    .summary {
+        padding: 18px;
+    }
+}
+
+/* Accessibility: reduce motion when requested */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
