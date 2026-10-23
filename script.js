@@ -1,304 +1,660 @@
+
 /* =========================================
-   DATE INVITATION — JAVASCRIPT
-   ========================================= */
+   DATE INVITATION — GOLDEN ELEGANCE
+   Invitation Builder + Guest Responses
+   Note: This version uses browser storage.
+   Cloud syncing is not enabled yet.
+========================================= */
 
-const datePlan = {
-    place: "",
-    food: "",
-    travel: "",
-    date: "",
-    time: ""
-};
+"use strict";
 
-let ownerPhone = "";
+const STORAGE_KEY = "goldenInviteData_v1";
+const PROFILE_KEY = "goldenInviteProfile_v1";
 
-/* Clean WhatsApp number */
-function cleanPhone(value) {
-    return String(value || "").replace(/\D/g, "");
-}
+const $ = (id) => document.getElementById(id);
 
-/* Show one screen at a time */
-function showOnlyScreen(id) {
-    document.querySelectorAll(".screen").forEach(screen => {
-        screen.classList.remove("active");
+let currentProfile = null;
+let activeInvitation = null;
+let guestName = "";
+let guestAnswers = {};
+let questionIndex = 0;
+
+const screenIds = ["home", "dashboard", "link", "guest", "missing"];
+
+/* ---------- Basic helpers ---------- */
+
+function showScreen(id) {
+    screenIds.forEach((screenId) => {
+        const element = $(screenId);
+        if (element) {
+            element.classList.toggle("active", screenId === id);
+        }
     });
 
-    const target = document.getElementById(id);
-
-    if (target) {
-        target.classList.add("active");
-    }
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-/* Navigate between invitation screens */
-function showScreen(number) {
-    if (number === "no") {
-        showOnlyScreen("noScreen");
-    } else {
-        showOnlyScreen(`screen${number}`);
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]);
+}
+
+function createId() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+    }
+
+    return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+function readStorage() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+        return {
+            invitations: Array.isArray(saved.invitations)
+                ? saved.invitations
+                : []
+        };
+    } catch (error) {
+        return { invitations: [] };
     }
 }
 
-function nextScreen(number) {
-    showScreen(number);
+function saveStorage(data) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        return true;
+    } catch (error) {
+        alert("Unable to save. Please check your browser storage.");
+        return false;
+    }
 }
 
-/* Create invitation link */
-function createInvitationLink() {
-    const input = document.getElementById("ownerPhone");
-    const phone = cleanPhone(input ? input.value : "");
-
-    if (phone.length < 8 || phone.length > 15) {
-        alert("Please enter a valid WhatsApp number including country code.");
-        return;
-    }
-
-    ownerPhone = phone;
-
+function getBaseURL() {
     const url = new URL(window.location.href);
     url.search = "";
-    url.searchParams.set("owner", phone);
-
-    const linkField = document.getElementById("invitationLink");
-
-    if (linkField) {
-        linkField.value = url.toString();
-    }
-
-    showOnlyScreen("linkScreen");
-}
-
-/* Generate an invitation URL */
-function generateInvitationLink(phoneNumber) {
-    const phone = cleanPhone(phoneNumber);
-
-    if (phone.length < 8 || phone.length > 15) {
-        return "";
-    }
-
-    const url = new URL(window.location.href);
-    url.search = "";
-    url.searchParams.set("owner", phone);
-
+    url.hash = "";
     return url.toString();
 }
 
-/* Copy invitation link */
-async function copyInvitationLink() {
-    const field = document.getElementById("invitationLink");
-    const message = document.getElementById("copyMessage");
+function makeInvitationURL(invitation) {
+    const url = new URL(getBaseURL());
+    url.searchParams.set("invite", invitation.id);
+    return url.toString();
+}
 
-    if (!field) return;
+function findInvitation(invitationId) {
+    return readStorage().invitations.find(
+        (invitation) => invitation.id === invitationId
+    );
+}
+
+/* ---------- Profile and dashboard ---------- */
+
+function saveProfile(name, phone) {
+    currentProfile = {
+        id: createId(),
+        name: name.trim(),
+        phone: String(phone || "").replace(/\D/g, "")
+    };
 
     try {
-        await navigator.clipboard.writeText(field.value);
+        localStorage.setItem(
+            PROFILE_KEY,
+            JSON.stringify(currentProfile)
+        );
+    } catch (error) {
+        alert("Your browser could not save the profile.");
+        return;
+    }
 
-        if (message) {
-            message.textContent =
-                "Copied! Now send it to your special person ❤️";
+    openDashboard();
+}
+
+function openDashboard() {
+    if (!currentProfile) {
+        showScreen("home");
+        return;
+    }
+
+    $("displayName").textContent = currentProfile.name;
+    renderDashboard();
+    showScreen("dashboard");
+}
+
+function renderDashboard() {
+    const data = readStorage();
+
+    const myInvitations = data.invitations.filter(
+        (invitation) => invitation.ownerId === currentProfile?.id
+    );
+
+    $("inviteCount").textContent = myInvitations.length;
+
+    $("replyCount").textContent = myInvitations.reduce(
+        (total, invitation) =>
+            total + (invitation.replies || []).length,
+        0
+    );
+
+    if (!myInvitations.length) {
+        $("cards").innerHTML =
+            '<p class="empty">Your invitations will appear here.</p>';
+        return;
+    }
+
+    $("cards").innerHTML = myInvitations
+        .slice()
+        .reverse()
+        .map((invitation) => {
+            const replies = invitation.replies || [];
+
+            return `
+                <article class="invitecard">
+                    <small>
+                        ${replies.length} REPLIES ·
+                        ${escapeHTML(new Date(invitation.created).toLocaleDateString())}
+                    </small>
+
+                    <h3>${escapeHTML(invitation.title)}</h3>
+
+                    <p>${escapeHTML(
+                        invitation.message || "A little moment made personal."
+                    )}</p>
+
+                    <div class="cardactions">
+                        <button class="gold"
+                            data-copy="${escapeHTML(invitation.id)}">
+                            Copy link ↗
+                        </button>
+
+                        <button class="outline"
+                            data-preview="${escapeHTML(invitation.id)}">
+                            Preview
+                        </button>
+
+                        <button class="outline"
+                            data-delete="${escapeHTML(invitation.id)}">
+                            Delete
+                        </button>
+                    </div>
+
+                    ${replies.map((reply) => `
+                        <div class="reply">
+                            <strong>♡ ${escapeHTML(reply.name)}</strong>
+
+                            <p>
+                                ${Object.entries(reply.answers || {})
+                                    .map(([question, answer]) =>
+                                        `<b>${escapeHTML(question)}:</b>
+                                        ${escapeHTML(answer || "—")}`
+                                    )
+                                    .join("<br>")}
+                            </p>
+
+                            <p>${escapeHTML(
+                                new Date(reply.at).toLocaleString()
+                            )}</p>
+                        </div>
+                    `).join("")}
+                </article>
+            `;
+        })
+        .join("");
+}
+
+/* ---------- Invitation builder ---------- */
+
+function getOptions(fieldId) {
+    return $(fieldId).value
+        .split(/\r?\n/)
+        .map((option) => option.trim())
+        .filter(Boolean)
+        .slice(0, 12);
+}
+
+function createInvitation(event) {
+    event.preventDefault();
+
+    const questions = [];
+
+    function addChoiceQuestion(checkId, key, label, optionsId) {
+        if (!$(checkId).checked) return;
+
+        const options = getOptions(optionsId);
+
+        if (!options.length) {
+            throw new Error(
+                "Please add at least one option or turn that question off."
+            );
+        }
+
+        questions.push({
+            key,
+            label,
+            type: "choice",
+            options
+        });
+    }
+
+    try {
+        addChoiceQuestion(
+            "usePlace",
+            "Place",
+            "Where would you like to go?",
+            "places"
+        );
+
+        addChoiceQuestion(
+            "useFood",
+            "Food",
+            "What sounds good to eat?",
+            "foods"
+        );
+
+        addChoiceQuestion(
+            "useTravel",
+            "Transport",
+            "How should we get there?",
+            "travels"
+        );
+    } catch (error) {
+        alert(error.message);
+        return;
+    }
+
+    if ($("useDate").checked) {
+        questions.push({
+            key: "Date",
+            label: "Which date works for you?",
+            type: "date"
+        });
+    }
+
+    if ($("useTime").checked) {
+        questions.push({
+            key: "Time",
+            label: "What time suits you?",
+            type: "time"
+        });
+    }
+
+    if ($("useNote").checked) {
+        questions.push({
+            key: "Note",
+            label: "Anything you'd like me to know?",
+            type: "text"
+        });
+    }
+
+    if (!questions.length) {
+        alert("Please enable at least one question.");
+        return;
+    }
+
+    const invitation = {
+        id: createId(),
+        ownerId: currentProfile.id,
+        ownerName: currentProfile.name,
+        title: $("title").value.trim(),
+        message: $("message").value.trim(),
+        questions,
+        replies: [],
+        created: new Date().toISOString()
+    };
+
+    const data = readStorage();
+    data.invitations.push(invitation);
+
+    if (!saveStorage(data)) return;
+
+    activeInvitation = invitation;
+    $("url").value = makeInvitationURL(invitation);
+    $("copyMessage").textContent = "";
+
+    showScreen("link");
+}
+
+/* ---------- Copy and share ---------- */
+
+async function copyText(text, messageElement) {
+    try {
+        await navigator.clipboard.writeText(text);
+
+        if (messageElement) {
+            messageElement.textContent = "Copied! Ready to share. ♡";
         }
     } catch (error) {
-        field.focus();
-        field.select();
+        const temporaryInput = document.createElement("textarea");
+
+        temporaryInput.value = text;
+        temporaryInput.style.position = "fixed";
+        temporaryInput.style.opacity = "0";
+
+        document.body.appendChild(temporaryInput);
+        temporaryInput.select();
 
         const copied = document.execCommand("copy");
+        temporaryInput.remove();
 
-        if (message) {
-            message.textContent = copied
-                ? "Copied! Now send it to your special person ❤️"
-                : "Select the link above and copy it manually.";
+        if (messageElement) {
+            messageElement.textContent = copied
+                ? "Copied! Ready to share. ♡"
+                : "Please select and copy the link manually.";
         }
     }
 }
 
-/* Save selected place, food and transport */
-function selectOption(category, value) {
-    if (!Object.prototype.hasOwnProperty.call(datePlan, category)) {
+/* ---------- Guest invitation ---------- */
+
+function openGuestInvitation(invitation) {
+    activeInvitation = invitation;
+    guestName = "";
+    guestAnswers = {};
+    questionIndex = 0;
+
+    $("nameForm").hidden = false;
+    $("question").innerHTML = "";
+    $("guestActions").hidden = true;
+    $("final").hidden = true;
+
+    $("guestTitle").innerHTML =
+        `${escapeHTML(invitation.title)}<br><i>♡</i>`;
+
+    $("guestIntro").textContent =
+        invitation.message ||
+        `${invitation.ownerName} has a little question for you.`;
+
+    $("progress").textContent = "A LITTLE QUESTION";
+
+    showScreen("guest");
+}
+
+function startGuestQuestions(event) {
+    event.preventDefault();
+
+    guestName = $("guestName").value.trim();
+
+    if (!guestName) {
+        alert("Please enter your name first. ♡");
         return;
     }
 
-    datePlan[category] = value;
+    $("nameForm").hidden = true;
 
-    const nextScreens = {
-        place: 6,
-        food: 7,
-        travel: 8
-    };
-
-    if (nextScreens[category]) {
-        nextScreen(nextScreens[category]);
-    }
-}
-
-/* Save selected date */
-function saveDate() {
-    const input = document.getElementById("date");
-
-    if (!input || !input.value) {
-        alert("Please choose a date first ❤️");
+    if (!activeInvitation.questions.length) {
+        finishInvitation();
         return;
     }
 
-    datePlan.date = input.value;
-    nextScreen(9);
+    renderQuestion();
 }
 
-/* Save selected time */
-function saveTime() {
-    const input = document.getElementById("time");
+function renderQuestion() {
+    const question = activeInvitation.questions[questionIndex];
 
-    if (!input || !input.value) {
-        alert("Please choose a time first ❤️");
-        return;
+    $("progress").textContent =
+        `QUESTION ${questionIndex + 1} OF ${activeInvitation.questions.length}`;
+
+    $("guestIntro").textContent =
+        `Just for you, ${guestName}. Choose what feels right.`;
+
+    $("question").innerHTML = `
+        <div class="qtitle">${escapeHTML(question.label)}</div>
+    `;
+
+    if (question.type === "choice") {
+        $("question").innerHTML += `
+            <div class="options">
+                ${question.options.map((option) => `
+                    <button type="button"
+                        class="option ${
+                            guestAnswers[question.key] === option
+                                ? "selected"
+                                : ""
+                        }"
+                        data-option="${escapeHTML(option)}">
+                        ${escapeHTML(option)}
+                    </button>
+                `).join("")}
+            </div>
+        `;
+    } else {
+        const type = ["date", "time"].includes(question.type)
+            ? question.type
+            : "text";
+
+        $("question").innerHTML += `
+            <input
+                id="answer"
+                type="${type}"
+                maxlength="250"
+                placeholder="Your answer"
+                value="${escapeHTML(guestAnswers[question.key] || "")}"
+            >
+        `;
     }
 
-    datePlan.time = input.value;
-    showSummary();
+    $("guestActions").hidden = false;
+    $("prev").disabled = questionIndex === 0;
+
+    $("next").textContent =
+        questionIndex === activeInvitation.questions.length - 1
+            ? "Confirm answers ♡"
+            : "Continue →";
 }
 
-/* Format date */
-function formatDate(value) {
-    if (!value) return "Not selected";
+function readCurrentAnswer() {
+    const question = activeInvitation.questions[questionIndex];
 
-    const date = new Date(`${value}T12:00:00`);
-
-    return date.toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric"
-    });
-}
-
-/* Format time */
-function formatTime(value) {
-    if (!value) return "Not selected";
-
-    const [hours, minutes] = value.split(":").map(Number);
-    const date = new Date();
-
-    date.setHours(hours, minutes, 0, 0);
-
-    return date.toLocaleTimeString(undefined, {
-        hour: "numeric",
-        minute: "2-digit"
-    });
-}
-
-/* Display the complete date plan */
-function showSummary() {
-    const values = {
-        summaryPlace: datePlan.place || "Not selected",
-        summaryFood: datePlan.food || "Not selected",
-        summaryTravel: datePlan.travel || "Not selected",
-        summaryDate: formatDate(datePlan.date),
-        summaryTime: formatTime(datePlan.time)
-    };
-
-    Object.entries(values).forEach(([id, value]) => {
-        const element = document.getElementById(id);
-
-        if (element) {
-            element.textContent = value;
+    if (question.type === "choice") {
+        if (!guestAnswers[question.key]) {
+            alert("Please choose an option. ♡");
+            return false;
         }
-    });
+    } else {
+        const input = $("answer");
+        const answer = input ? input.value.trim() : "";
 
-    nextScreen(10);
-}
+        if (!answer) {
+            alert("Please answer this question. ♡");
+            return false;
+        }
 
-/* Get guest's name */
-function getGuestName() {
-    const input = document.getElementById("guestName");
-
-    return (input && input.value.trim()) || "My love";
-}
-
-/* Confirm the date */
-function confirmDate() {
-    const name = getGuestName();
-
-    const greeting = document.getElementById("finalGreeting");
-
-    if (greeting) {
-        greeting.textContent =
-            `It's a date, ${name}! I can't wait to spend this time with you. ❤️`;
+        guestAnswers[question.key] = answer;
     }
 
-    /*
-      DEMO ONLY:
-      This stores the response in this browser.
-      Appwrite integration is still needed to sync responses
-      across different phones and show them in your dashboard.
-    */
+    return true;
+}
 
-    const response = {
-        guestName: name,
-        ownerPhone: ownerPhone,
-        plan: { ...datePlan },
-        confirmedAt: new Date().toISOString(),
-        status: "Confirmed"
-    };
+function finishInvitation() {
+    const data = readStorage();
 
+    const invitation = data.invitations.find(
+        (item) => item.id === activeInvitation.id
+    );
+
+    if (invitation) {
+        invitation.replies = invitation.replies || [];
+
+        invitation.replies.push({
+            name: guestName,
+            answers: { ...guestAnswers },
+            at: new Date().toISOString()
+        });
+
+        saveStorage(data);
+    }
+
+    $("question").innerHTML = "";
+    $("guestActions").hidden = true;
+
+    $("progress").textContent = "ALL DONE";
+
+    $("guestTitle").innerHTML =
+        `It's a date, <i>${escapeHTML(guestName || "my love")}!</i>`;
+
+    $("guestIntro").textContent =
+        "Thank you for making this little moment special.";
+
+    $("final").hidden = false;
+
+    $("final").innerHTML = `
+        <h2>Looking forward to it ♡</h2>
+        <p>${escapeHTML(activeInvitation.ownerName)} is going to be smiling about this.</p>
+        <p>
+            Here's to good company, little surprises,
+            and a memory worth keeping.
+        </p>
+    `;
+}
+
+/* ---------- Event listeners ---------- */
+
+document.addEventListener("DOMContentLoaded", function () {
     try {
-        const previous = JSON.parse(
-            localStorage.getItem("dateInvitationDemoResponses") || "[]"
-        );
-
-        previous.push(response);
-
-        localStorage.setItem(
-            "dateInvitationDemoResponses",
-            JSON.stringify(previous)
+        currentProfile = JSON.parse(
+            localStorage.getItem(PROFILE_KEY) || "null"
         );
     } catch (error) {
-        console.warn("Browser storage is unavailable.");
+        currentProfile = null;
     }
 
-    nextScreen(11);
-}
+    $("profileForm").addEventListener("submit", (event) => {
+        event.preventDefault();
 
-/* Respect a no response */
-function noThanks() {
-    nextScreen("no");
-}
+        saveProfile(
+            $("ownerName").value,
+            $("ownerPhone").value
+        );
+    });
 
-/* Start website */
-document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById("createInvitationForm");
+    $("builder").addEventListener("submit", createInvitation);
 
-    if (form) {
-        form.addEventListener("submit", function (event) {
-            event.preventDefault();
-            createInvitationLink();
-        });
-    }
+    $("switchProfile").addEventListener("click", () => {
+        showScreen("home");
+    });
 
-    const copyButton = document.getElementById("copyInvitationLink");
+    $("back").addEventListener("click", openDashboard);
 
-    if (copyButton) {
-        copyButton.addEventListener("click", copyInvitationLink);
-    }
+    $("copy").addEventListener("click", () => {
+        copyText($("url").value, $("copyMessage"));
+    });
 
-    const backButton = document.getElementById("editInvitationPhone");
+    $("preview").addEventListener("click", () => {
+        if (activeInvitation) {
+            window.open(
+                makeInvitationURL(activeInvitation),
+                "_blank",
+                "noopener,noreferrer"
+            );
+        }
+    });
 
-    if (backButton) {
-        backButton.addEventListener("click", function () {
-            showOnlyScreen("loginScreen");
-        });
-    }
+    $("cards").addEventListener("click", (event) => {
+        const copyButton = event.target.closest("[data-copy]");
+        const previewButton = event.target.closest("[data-preview]");
+        const deleteButton = event.target.closest("[data-delete]");
 
-    /* Open invitation when a shared link contains an owner number */
-    const params = new URLSearchParams(window.location.search);
-    const sharedOwner = cleanPhone(params.get("owner"));
+        if (copyButton) {
+            const invitation = findInvitation(copyButton.dataset.copy);
 
-    if (sharedOwner.length >= 8 && sharedOwner.length <= 15) {
-        ownerPhone = sharedOwner;
-        showOnlyScreen("screen1");
+            if (invitation) {
+                copyText(
+                    makeInvitationURL(invitation),
+                    $("builderMessage")
+                );
+            }
+        } else if (previewButton) {
+            const invitation = findInvitation(
+                previewButton.dataset.preview
+            );
+
+            if (invitation) {
+                window.open(
+                    makeInvitationURL(invitation),
+                    "_blank",
+                    "noopener,noreferrer"
+                );
+            }
+        } else if (
+            deleteButton &&
+            window.confirm(
+                "Delete this invitation and its replies from this browser?"
+            )
+        ) {
+            const data = readStorage();
+
+            data.invitations = data.invitations.filter(
+                (invitation) =>
+                    invitation.id !== deleteButton.dataset.delete
+            );
+
+            if (saveStorage(data)) {
+                renderDashboard();
+            }
+        }
+    });
+
+    $("nameForm").addEventListener("submit", startGuestQuestions);
+
+    $("question").addEventListener("click", (event) => {
+        const optionButton = event.target.closest("[data-option]");
+
+        if (!optionButton) return;
+
+        const question = activeInvitation.questions[questionIndex];
+
+        guestAnswers[question.key] = optionButton.dataset.option;
+
+        renderQuestion();
+    });
+
+    $("next").addEventListener("click", () => {
+        if (!readCurrentAnswer()) return;
+
+        if (questionIndex < activeInvitation.questions.length - 1) {
+            questionIndex++;
+            renderQuestion();
+        } else {
+            finishInvitation();
+        }
+    });
+
+    $("prev").addEventListener("click", () => {
+        if (questionIndex > 0) {
+            questionIndex--;
+            renderQuestion();
+        }
+    });
+
+    $("goHome").addEventListener("click", () => {
+        window.history.replaceState({}, "", getBaseURL());
+        showScreen("home");
+    });
+
+    /* Load shared invitation link */
+    const invitationId =
+        new URLSearchParams(window.location.search).get("invite");
+
+    if (invitationId) {
+        const invitation = findInvitation(invitationId);
+
+        if (invitation) {
+            openGuestInvitation(invitation);
+        } else {
+            showScreen("missing");
+        }
+    } else if (currentProfile) {
+        openDashboard();
     } else {
-        showOnlyScreen("loginScreen");
+        showScreen("home");
     }
 });
+
