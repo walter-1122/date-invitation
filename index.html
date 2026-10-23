@@ -1,238 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#4b0714">
-  <meta name="description" content="Create a thoughtful date invitation and share a little love.">
-  <title>A Little Something For You | Our Special Date</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="ambient ambient-one" aria-hidden="true"></div>
-  <div class="ambient ambient-two" aria-hidden="true"></div>
-  <div class="hearts" aria-hidden="true"></div>
-
-  <header class="site-header">
-    <a href="#" class="brand" aria-label="Our special date home">
-      <span class="brand-icon">♥</span>
-      <span>little <strong>moments</strong></span>
-    </a>
-    <span class="header-note">A little something special <span>♡</span></span>
-  </header>
-
-  <main class="page-shell">
-    <!-- CREATOR START -->
-    <section class="screen active auth-screen" id="loginScreen">
-      <div class="auth-card">
-        <div class="brand-emblem" aria-hidden="true">♥</div>
-        <p class="eyebrow">YOUR LITTLE SURPRISE</p>
-        <h1 class="auth-title">Create your<br><span>date invitation.</span></h1>
-        <p class="auth-description">Build a thoughtful date plan and create a link to share with someone special.</p>
-        <form class="auth-form" id="createInvitationForm">
-          <label for="ownerPhone">Your WhatsApp number</label>
-          <input type="tel" id="ownerPhone" name="ownerPhone" placeholder="Country code + number" autocomplete="tel" required>
-          <p class="supporting-text">Include your country code without the + sign. Example: 923001234567</p>
-          <button type="submit" class="primary-button">Create my invitation ❤️</button>
-        </form>
-        <p class="privacy-note"><span aria-hidden="true">♡</span> Demo version — no account needed yet.</p>
-      </div>
-    </section>
-
-    <!-- LINK RESULT: NO POP-UP -->
-    <section class="screen auth-screen" id="linkScreen">
-      <div class="auth-card">
-        <div class="brand-emblem" aria-hidden="true">♥</div>
-        <p class="eyebrow">YOUR INVITATION IS READY</p>
-        <h1 class="auth-title">A little link<br><span>full of love.</span></h1>
-        <p class="auth-description">Copy this link and send it to your special person.</p>
-        <label for="invitationLink">Your invitation link</label>
-        <input type="text" id="invitationLink" readonly>
-        <button type="button" class="primary-button" id="copyInvitationLink">Copy invitation link ❤️</button>
-        <p class="form-message" id="copyMessage" role="status" aria-live="polite"></p>
-        <button type="button" class="back-button" id="editInvitationPhone">← Back</button>
-        <p class="supporting-text">Note: this starter version uses a demo link. Secure accounts and saved cross-device responses will be connected through Appwrite in a later step.</p>
-      </div>
-    </section>
-
-    <!-- INVITATION EXPERIENCE -->
-    <section class="screen invitation-screen" id="screen1">
-      <div class="invitation-card">
-        <div class="step-indicator">A LITTLE SURPRISE <span>♡</span></div>
-        <div class="flower" aria-hidden="true">🌸</div>
-        <p class="small-text">Just one little question...</p>
-        <h1>How are you doing,<br><span>Gorgeous?</span> ❤️</h1>
-        <p class="supporting-text">I hope this little surprise brings a smile to your face.</p>
-        <label class="field-label" for="guestName">What should I call you?</label>
-        <input type="text" id="guestName" class="date-input" placeholder="Your name" maxlength="60" autocomplete="name">
-        <button type="button" class="primary-button" onclick="nextScreen(2)">Let's begin 💗</button>
-        <p class="card-footer">Made with a little extra love</p>
-      </div>
-    </section>
-
-    <section class="screen invitation-screen" id="screen2">
-      <div class="invitation-card">
-        <div class="step-indicator">A LITTLE SURPRISE <span>♡</span></div>
-        <div class="flower" aria-hidden="true">🌷</div>
-        <p class="eyebrow">A LITTLE CONFESSION</p>
-        <h2>I want to say something...</h2>
-        <p>I've wanted to tell you something for many days, and I wanted to do it in a way that feels special.</p>
-        <p>So here's a little question, from the heart.</p>
-        <button type="button" class="primary-button" onclick="nextScreen(3)">Tell me more 💕</button>
-        <p class="card-footer">Something from the heart</p>
-      </div>
-    </section>
-
-    <section class="screen invitation-screen" id="screen3">
-      <div class="invitation-card">
-        <div class="step-indicator">THE BIG QUESTION <span>♡</span></div>
-        <div class="flower" aria-hidden="true">🌹</div>
-        <p class="eyebrow">HERE GOES NOTHING...</p>
-        <h1>Would you like to<br><span>go on a date with me?</span> ❤️</h1>
-        <p class="supporting-text">No pressure. Your answer is completely your choice.</p>
-        <div class="choice-buttons">
-          <button type="button" class="primary-button" onclick="nextScreen(4)">Yes, I'd love to! 💗</button>
-          <button type="button" class="secondary-button no-button" onclick="noThanks()">No, thank you</button>
-        </div>
-        <p class="card-footer">Your answer is always yours to choose.</p>
-      </div>
-    </section>
-
-    <section class="screen invitation-screen" id="screen4">
-      <div class="invitation-card">
-        <div class="flower" aria-hidden="true">🌸</div>
-        <p class="eyebrow">WELL, THIS IS EXCITING</p>
-        <h1>Yay! <span>❤️</span></h1>
-        <p>Let's plan a little moment that we'll both remember.</p>
-        <button type="button" class="primary-button" onclick="nextScreen(5)">Let's plan it ✨</button>
-      </div>
-    </section>
-
-    <section class="screen invitation-screen" id="screen5">
-      <div class="invitation-card">
-        <div class="flower" aria-hidden="true">🌷</div>
-        <p class="eyebrow">FIRST THINGS FIRST</p>
-        <h2>Where should we go?</h2>
-        <p class="supporting-text">Pick the kind of place that feels right.</p>
-        <div class="options">
-          <button type="button" class="option-button" onclick="selectOption('place','Cute Café')">☕ <span>Cute Café</span></button>
-          <button type="button" class="option-button" onclick="selectOption('place','Dinner')">🍽️ <span>Dinner</span></button>
-          <button type="button" class="option-button" onclick="selectOption('place','Park')">🌳 <span>A peaceful park</span></button>
-          <button type="button" class="option-button" onclick="selectOption('place','Movie')">🎬 <span>A movie</span></button>
-        </div>
-        <button type="button" class="back-button" onclick="nextScreen(4)">← Go back</button>
-      </div>
-    </section>
-
-    <section class="screen invitation-screen" id="screen6">
-      <div class="invitation-card">
-        <div class="flower" aria-hidden="true">🌹</div>
-        <p class="eyebrow">A LITTLE SOMETHING TO EAT</p>
-        <h2>What sounds delicious?</h2>
-        <p class="supporting-text">Because good food makes good moments.</p>
-        <div class="options">
-          <button type="button" class="option-button" onclick="selectOption('food','Pizza')">🍕 <span>Pizza</span></button>
-          <button type="button" class="option-button" onclick="selectOption('food','Burgers')">🍔 <span>Burgers</span></button>
-          <button type="button" class="option-button" onclick="selectOption('food','Pasta')">🍝 <span>Pasta</span></button>
-          <button type="button" class="option-button" onclick="selectOption('food','Coffee & Dessert')">🍰 <span>Coffee & dessert</span></button>
-        </div>
-        <button type="button" class="back-button" onclick="nextScreen(5)">← Go back</button>
-      </div>
-    </section>
-
-    <section class="screen invitation-screen" id="screen7">
-      <div class="invitation-card">
-        <div class="flower" aria-hidden="true">🌸</div>
-        <p class="eyebrow">THE JOURNEY</p>
-        <h2>How shall we get there?</h2>
-        <p class="supporting-text">It's the company that matters most.</p>
-        <div class="options">
-          <button type="button" class="option-button" onclick="selectOption('travel','Car')">🚗 <span>Car</span></button>
-          <button type="button" class="option-button" onclick="selectOption('travel','Bike')">🏍️ <span>Bike</span></button>
-          <button type="button" class="option-button" onclick="selectOption('travel','Ride')">🚕 <span>Ride</span></button>
-          <button type="button" class="option-button" onclick="selectOption('travel','Decide Together')">💕 <span>Decide together</span></button>
-        </div>
-        <button type="button" class="back-button" onclick="nextScreen(6)">← Go back</button>
-      </div>
-    </section>
-
-    <section class="screen invitation-screen" id="screen8">
-      <div class="invitation-card">
-        <div class="flower" aria-hidden="true">🌷</div>
-        <p class="eyebrow">SAVE THE DATE</p>
-        <h2>Which day works for you?</h2>
-        <p class="supporting-text">Choose a day that makes you happy.</p>
-        <label class="field-label" for="date">Our special day</label>
-        <input type="date" id="date" class="date-input" required>
-        <button type="button" class="primary-button" onclick="saveDate()">Next 💕</button>
-        <button type="button" class="back-button" onclick="nextScreen(7)">← Go back</button>
-      </div>
-    </section>
-
-    <section class="screen invitation-screen" id="screen9">
-      <div class="invitation-card">
-        <div class="flower" aria-hidden="true">🌹</div>
-        <p class="eyebrow">TIME FOR US</p>
-        <h2>What time works best?</h2>
-        <p class="supporting-text">Let's choose a time we can both enjoy.</p>
-        <label class="field-label" for="time">Our time</label>
-        <input type="time" id="time" class="date-input" required>
-        <button type="button" class="primary-button" onclick="saveTime()">Next ✨</button>
-        <button type="button" class="back-button" onclick="nextScreen(8)">← Go back</button>
-      </div>
-    </section>
-
-    <section class="screen invitation-screen" id="screen10">
-      <div class="invitation-card">
-        <div class="flower" aria-hidden="true">💐</div>
-        <p class="eyebrow">JUST LOOK AT US, PLANNING THINGS</p>
-        <h2>Our Date Plan <span>❤️</span></h2>
-        <p class="supporting-text">Here's the plan you've put together.</p>
-        <div class="summary">
-          <p><span>📍</span><strong>Place</strong><span id="summaryPlace">Not selected</span></p>
-          <p><span>🍕</span><strong>Food</strong><span id="summaryFood">Not selected</span></p>
-          <p><span>🚗</span><strong>Travel</strong><span id="summaryTravel">Not selected</span></p>
-          <p><span>📅</span><strong>Date</strong><span id="summaryDate">Not selected</span></p>
-          <p><span>⏰</span><strong>Time</strong><span id="summaryTime">Not selected</span></p>
-        </div>
-        <button type="button" class="primary-button" onclick="confirmDate()">Yes, I confirm ❤️</button>
-        <button type="button" class="back-button" onclick="nextScreen(9)">← Go back</button>
-      </div>
-    </section>
-
-    <section class="screen invitation-screen" id="screen11">
-      <div class="invitation-card final-card">
-        <div class="flower" aria-hidden="true">💖</div>
-        <p class="eyebrow">A LITTLE MEMORY IN THE MAKING</p>
-        <h1>It's a <span>Date!</span> ❤️</h1>
-        <p id="finalGreeting">I can't wait to spend some time with you.</p>
-        <div class="big-heart" aria-hidden="true">♥</div>
-        <p class="supporting-text">Here's to lovely moments and happy memories.</p>
-        <div class="love-note">
-          <h2>A little note for you</h2>
-          <p id="loveParagraph">My love, you bring so much happiness into my life. Every moment with you is special, and even the simplest day feels beautiful when I get to share it with you. I want to make more memories with you, see you smile, hold your hand, and remind you how deeply you are loved. I hope this little invitation makes you smile, because your happiness means so much to me. I love you more than words can ever say. ❤️🌹</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="screen invitation-screen" id="noScreen">
-      <div class="invitation-card">
-        <div class="flower" aria-hidden="true">🌷</div>
-        <h2>No worries <span>♡</span></h2>
-        <p>Thank you for being honest. I still hope you have a beautiful day.</p>
-        <p class="supporting-text">Your comfort matters, always.</p>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <p>Made with <span>♥</span> and a little bit of magic.</p>
-    <a href="privacy.html">Privacy</a>
-  </footer>
-  <script src="script.js"></script>
-</body>
-</html>
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#100d09"><title>A Little Something For You</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23100d09'/%3E%3Cpath d='M50 80S12 54 12 32C12 10 40 8 50 29 60 8 88 10 88 32 88 54 50 80 50 80Z' fill='%23d9bd7b'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head><body>
+<div class="glow g1"></div><div class="glow g2"></div>
+<header><a class="brand" href="./"><span class="brandicon">♡</span> little moments</a><span class="topnote">A little magic, made personal</span></header>
+<main>
+<section class="screen active" id="home"><div class="emblem">♡</div><p class="eyebrow">A PERSONAL INVITATION STUDIO</p><h1>Create a moment<br><i>worth remembering.</i></h1><p class="intro">Build a thoughtful date invitation, choose what to ask, and share your personal link.</p>
+<form id="profileForm"><label>Your name</label><input id="ownerName" required maxlength="60" placeholder="Your name"><label>WhatsApp number <small>(optional)</small></label><input id="ownerPhone" type="tel" placeholder="Country code + number"><button class="gold full">Open my studio ↗</button></form><p class="note">This starter version saves information in this browser only.</p></section>
+<section class="screen wide" id="dashboard"><div class="dashhead"><div><p class="eyebrow">YOUR PRIVATE STUDIO</p><h1 class="dashTitle">Hello, <i id="displayName">there</i>.</h1><p class="intro left">Make every detail feel like you.</p></div><button class="outline" id="switchProfile">Switch profile</button></div>
+<div class="stats"><article><small>INVITATIONS</small><strong id="inviteCount">0</strong></article><article><small>CONFIRMATIONS</small><strong id="replyCount">0</strong></article><article><small>YOUR VIBE</small><strong>Golden</strong></article></div>
+<div class="panel"><div class="secthead"><div><p class="eyebrow">MAKE IT YOURS</p><h2>Create an invitation</h2></div><small>01 / DESIGN</small></div>
+<form id="builder"><label>Invitation title</label><input id="title" required maxlength="80" placeholder="A little date with me..."><label>Opening message</label><textarea id="message" maxlength="400" placeholder="I have something sweet to ask you..."></textarea>
+<div class="buildergrid">
+<div class="field"><label class="toggle"><input type="checkbox" id="usePlace" checked> Ask about place</label><label>Place options (one per line)</label><textarea id="places">Cute café\nDinner\nPark walk\nMovie night</textarea></div>
+<div class="field"><label class="toggle"><input type="checkbox" id="useFood" checked> Ask about food</label><label>Food options (one per line)</label><textarea id="foods">Pizza\nPasta\nDessert & coffee\nSurprise me</textarea></div>
+<div class="field"><label class="toggle"><input type="checkbox" id="useTravel" checked> Ask about transport</label><label>Transport options (one per line)</label><textarea id="travels">Car\nBike\nRide share\nDecide together</textarea></div>
+<div class="field checks"><label class="toggle"><input type="checkbox" id="useDate" checked> Ask about date</label><label class="toggle"><input type="checkbox" id="useTime" checked> Ask about time</label><label class="toggle"><input type="checkbox" id="useNote"> Ask for a guest note</label></div></div>
+<button class="gold full">Create my personal link ♡</button><p class="note" id="builderMessage"></p></form></div>
+<div class="panel"><div class="secthead"><div><p class="eyebrow">YOUR COLLECTION</p><h2>Invitations & replies</h2></div><small>02 / MOMENTS</small></div><div id="cards" class="cards"><p class="empty">Your invitations will appear here.</p></div></div>
+<div class="panel warning"><b>Cloud syncing isn't enabled yet.</b><p>Replies made on another phone will not appear here until secure Appwrite syncing is connected. This version stores drafts and responses in the current browser only.</p></div></section>
+<section class="screen" id="link"><div class="emblem">✧</div><p class="eyebrow">YOUR LINK IS READY</p><h1>A little moment,<br><i>ready to share.</i></h1><p class="intro">Copy the link and send it to your special person.</p><label>Personal invitation link</label><div class="copyrow"><input id="url" readonly><button class="gold" id="copy">Copy</button></div><p class="note" id="copyMessage"></p><div class="actions"><button class="outline" id="back">Back to studio</button><button class="outline" id="preview">Preview invitation ↗</button></div></section>
+<section class="screen" id="guest"><div class="progress" id="progress">A LITTLE QUESTION</div><div class="emblem">♡</div><p class="eyebrow">MADE JUST FOR YOU</p><h1 id="guestTitle">Can I ask you<br><i>something sweet?</i></h1><p class="intro" id="guestIntro">Someone has a little question for you.</p><form id="nameForm"><label>What should I call you?</label><input id="guestName" required maxlength="60" placeholder="Your name"><button class="gold full">Let's see ♡</button></form><div id="question"></div><div class="actions" id="guestActions" hidden><button class="outline" id="prev">← Back</button><button class="gold" id="next">Continue →</button></div><div id="final" hidden></div></section>
+<section class="screen" id="missing"><div class="emblem">♡</div><p class="eyebrow">A LITTLE DETOUR</p><h1>This link needs<br><i>a fresh start.</i></h1><p class="intro">This invitation is not available in this browser. Ask the sender for a new link.</p><button class="gold" id="goHome">Go to home</button></section>
+</main><footer>Made with care, one little moment at a time. ♡</footer><script src="script.js"></script></body></html>
