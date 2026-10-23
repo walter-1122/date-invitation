@@ -1,6 +1,9 @@
-// Date invitation website
 
-let datePlan = {
+// Date Invitation — Main Website Script
+
+"use strict";
+
+const datePlan = {
     place: "",
     food: "",
     travel: "",
@@ -8,110 +11,147 @@ let datePlan = {
     time: ""
 };
 
+// Change this to your WhatsApp number with country code.
+// Do not include +, spaces, or dashes.
+const yourWhatsAppNumber = "923214825245";
 
-// Move between screens
-function nextScreen(screenNumber) {
-
+// Show one screen and hide all others.
+function showScreen(screenId) {
     document.querySelectorAll(".screen").forEach(screen => {
         screen.classList.remove("active");
     });
 
-    const next = document.getElementById("screen" + screenNumber);
+    const target = document.getElementById(screenId);
 
-    if (next) {
-        next.classList.add("active");
+    if (target) {
+        target.classList.add("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
     }
 }
 
-
-// NO response
-function noThanks() {
-
-    document.querySelectorAll(".screen").forEach(screen => {
-        screen.classList.remove("active");
-    });
-
-    document.getElementById("noScreen").classList.add("active");
+// Move between invitation screens.
+function nextScreen(screenNumber) {
+    showScreen("screen" + screenNumber);
 }
 
+// Show the response when NO is selected.
+function noThanks() {
+    showScreen("noScreen");
+}
 
-// Save place, food and travel choices
+// Show the login screen.
+function showLogin() {
+    showScreen("loginScreen");
+}
+
+// Show the signup screen.
+function showSignup() {
+    showScreen("signupScreen");
+}
+
+// Open the invitation after a successful authentication flow.
+// NOTE: This function does not verify a real account.
+function openInvitation() {
+    showScreen("screen1");
+}
+
+// Save place, food, and travel choices.
 function selectOption(type, value) {
+    const allowedTypes = ["place", "food", "travel"];
+
+    if (!allowedTypes.includes(type)) {
+        return;
+    }
 
     datePlan[type] = value;
 
     if (type === "place") {
         nextScreen(6);
-    }
-
-    if (type === "food") {
+    } else if (type === "food") {
         nextScreen(7);
-    }
-
-    if (type === "travel") {
+    } else if (type === "travel") {
         nextScreen(8);
     }
 }
 
-
-// Save selected date
+// Save selected date.
 function saveDate() {
-
     const dateInput = document.getElementById("date");
 
-    if (!dateInput.value) {
+    if (!dateInput || !dateInput.value) {
         alert("Please choose a date ❤️");
         return;
     }
 
-    datePlan.date = dateInput.value;
+    const selectedDate = new Date(dateInput.value + "T00:00:00");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
+    if (selectedDate < today) {
+        alert("Please choose today or a future date ❤️");
+        return;
+    }
+
+    datePlan.date = dateInput.value;
     nextScreen(9);
 }
 
-
-// Save selected time
+// Save selected time.
 function saveTime() {
-
     const timeInput = document.getElementById("time");
 
-    if (!timeInput.value) {
+    if (!timeInput || !timeInput.value) {
         alert("Please choose a time ❤️");
         return;
     }
 
     datePlan.time = timeInput.value;
-
     showSummary();
 }
 
-
-// Show final date summary
+// Display the date summary.
 function showSummary() {
+    const requiredChoices = [
+        datePlan.place,
+        datePlan.food,
+        datePlan.travel,
+        datePlan.date,
+        datePlan.time
+    ];
 
-    document.getElementById("summaryPlace").textContent =
-        datePlan.place;
+    if (requiredChoices.some(value => !value)) {
+        alert("Please complete all the date details first ❤️");
+        return;
+    }
 
-    document.getElementById("summaryFood").textContent =
-        datePlan.food;
+    const summaryFields = {
+        summaryPlace: datePlan.place,
+        summaryFood: datePlan.food,
+        summaryTravel: datePlan.travel,
+        summaryDate: formatDate(datePlan.date),
+        summaryTime: formatTime(datePlan.time)
+    };
 
-    document.getElementById("summaryTravel").textContent =
-        datePlan.travel;
+    Object.entries(summaryFields).forEach(([id, value]) => {
+        const element = document.getElementById(id);
 
-    document.getElementById("summaryDate").textContent =
-        formatDate(datePlan.date);
-
-    document.getElementById("summaryTime").textContent =
-        formatTime(datePlan.time);
+        if (element) {
+            element.textContent = value;
+        }
+    });
 
     nextScreen(10);
 }
 
+// Format date nicely.
+function formatDate(dateValue) {
+    if (!dateValue) return "Not selected";
 
-// Format date nicely
-function formatDate(date) {
+    const selectedDate = new Date(dateValue + "T00:00:00");
 
-    const selectedDate = new Date(date + "T00:00:00");
+    if (Number.isNaN(selectedDate.getTime())) {
+        return "Not selected";
+    }
 
     return selectedDate.toLocaleDateString("en-US", {
         weekday: "long",
@@ -121,15 +161,16 @@ function formatDate(date) {
     });
 }
 
+// Format time nicely.
+function formatTime(timeValue) {
+    if (!timeValue || !timeValue.includes(":")) {
+        return "Not selected";
+    }
 
-// Format time nicely
-function formatTime(time) {
-
-    const [hours, minutes] = time.split(":");
-
+    const [hours, minutes] = timeValue.split(":").map(Number);
     const date = new Date();
 
-    date.setHours(hours, minutes);
+    date.setHours(hours, minutes, 0, 0);
 
     return date.toLocaleTimeString("en-US", {
         hour: "numeric",
@@ -137,9 +178,18 @@ function formatTime(time) {
     });
 }
 
-
-// Final confirmation + WhatsApp
+// Confirm the date and prepare the WhatsApp message.
 function confirmDate() {
+    if (
+        !datePlan.place ||
+        !datePlan.food ||
+        !datePlan.travel ||
+        !datePlan.date ||
+        !datePlan.time
+    ) {
+        alert("Please complete your date plan first ❤️");
+        return;
+    }
 
     const message =
         "❤️ Date Invitation Response\n\n" +
@@ -151,15 +201,33 @@ function confirmDate() {
         "⏰ Time: " + formatTime(datePlan.time) + "\n\n" +
         "Can't wait! ❤️";
 
-    const yourWhatsAppNumber = "923214825245";
-
     const whatsappURL =
         "https://wa.me/" +
         yourWhatsAppNumber +
         "?text=" +
         encodeURIComponent(message);
 
-    window.open(whatsappURL, "_blank");
+    window.open(whatsappURL, "_blank", "noopener,noreferrer");
 
     nextScreen(11);
 }
+
+// Keep all screens and choices initialized on page load.
+document.addEventListener("DOMContentLoaded", () => {
+    const activeScreen = document.querySelector(".screen.active");
+
+    // If no screen is active, start at the login screen.
+    if (!activeScreen) {
+        const loginScreen = document.getElementById("loginScreen");
+
+        if (loginScreen) {
+            loginScreen.classList.add("active");
+        } else {
+            const firstScreen = document.getElementById("screen1");
+
+            if (firstScreen) {
+                firstScreen.classList.add("active");
+            }
+        }
+    }
+});
