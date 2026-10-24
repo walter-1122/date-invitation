@@ -1,660 +1,669 @@
 
-/* =========================================
-   DATE INVITATION — GOLDEN ELEGANCE
-   Invitation Builder + Guest Responses
-   Note: This version uses browser storage.
-   Cloud syncing is not enabled yet.
-========================================= */
-
+/* Rose Romance Date Invitation
+   Demo version: data is saved in this browser only.
+*/
 "use strict";
 
-const STORAGE_KEY = "goldenInviteData_v1";
-const PROFILE_KEY = "goldenInviteProfile_v1";
+const DATA_KEY = "roseMomentsData_v1";
+const PROFILE_KEY = "roseMomentsProfile_v1";
 
-const $ = (id) => document.getElementById(id);
+const $ = id => document.getElementById(id);
 
-let currentProfile = null;
-let activeInvitation = null;
+let me = null;
+let activeInvite = null;
 let guestName = "";
-let guestAnswers = {};
+let answers = {};
 let questionIndex = 0;
 
-const screenIds = ["home", "dashboard", "link", "guest", "missing"];
+const screens = ["home", "dashboard", "link", "guest", "missing"];
 
-/* ---------- Basic helpers ---------- */
+const optionDecor = {
+  "Cute Café": "☕",
+  "Dinner": "🍽️",
+  "Park walk": "🌿",
+  "Movie night": "🎬",
+  "Pizza": "🍕",
+  "Pasta": "🍝",
+  "Coffee & dessert": "🍰",
+  "Anything together": "💕",
+  "Car": "🚗",
+  "Ride share": "🚕",
+  "A little walk": "🚶",
+  "Decide together": "♡"
+};
 
 function showScreen(id) {
-    screenIds.forEach((screenId) => {
-        const element = $(screenId);
-        if (element) {
-            element.classList.toggle("active", screenId === id);
-        }
-    });
+  screens.forEach(screenId => {
+    $(screenId).classList.toggle("active", screenId === id);
+  });
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function readData() {
+  try {
+    const data = JSON.parse(
+      localStorage.getItem(DATA_KEY) || '{"invitations":[]}'
+    );
+
+    return data && Array.isArray(data.invitations)
+      ? data
+      : { invitations: [] };
+  } catch {
+    return { invitations: [] };
+  }
+}
+
+function writeData(data) {
+  try {
+    localStorage.setItem(DATA_KEY, JSON.stringify(data));
+    return true;
+  } catch {
+    alert(
+      "Your browser storage is full. Please remove older invitations and try again."
+    );
+    return false;
+  }
 }
 
 function escapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, (character) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-    })[character]);
+  return String(value ?? "").replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[character]);
 }
 
-function createId() {
-    if (window.crypto && typeof window.crypto.randomUUID === "function") {
-        return window.crypto.randomUUID().replace(/-/g, "").slice(0, 16);
-    }
+function makeId() {
+  if (window.crypto && crypto.randomUUID) {
+    return crypto.randomUUID().replaceAll("-", "").slice(0, 16);
+  }
 
-    return Math.random().toString(36).slice(2) + Date.now().toString(36);
+  return Math.random().toString(36).slice(2) +
+    Date.now().toString(36);
 }
 
-function readStorage() {
-    try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-
-        return {
-            invitations: Array.isArray(saved.invitations)
-                ? saved.invitations
-                : []
-        };
-    } catch (error) {
-        return { invitations: [] };
-    }
+function cleanBaseURL() {
+  const url = new URL(location.href);
+  url.search = "";
+  url.hash = "";
+  return url.toString();
 }
 
-function saveStorage(data) {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        return true;
-    } catch (error) {
-        alert("Unable to save. Please check your browser storage.");
-        return false;
-    }
+function invitationURL(invitation) {
+  const url = new URL(cleanBaseURL());
+  url.searchParams.set("invite", invitation.id);
+  return url.toString();
 }
 
-function getBaseURL() {
-    const url = new URL(window.location.href);
-    url.search = "";
-    url.hash = "";
-    return url.toString();
+function findInvitation(id) {
+  return readData().invitations.find(invitation => invitation.id === id);
 }
 
-function makeInvitationURL(invitation) {
-    const url = new URL(getBaseURL());
-    url.searchParams.set("invite", invitation.id);
-    return url.toString();
-}
+function setProfile(name, phone) {
+  me = {
+    id: makeId(),
+    name: name.trim(),
+    phone: (phone || "").replace(/\D/g, "")
+  };
 
-function findInvitation(invitationId) {
-    return readStorage().invitations.find(
-        (invitation) => invitation.id === invitationId
-    );
-}
+  try {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(me));
+  } catch {
+    // The profile can still be used for this page session.
+  }
 
-/* ---------- Profile and dashboard ---------- */
-
-function saveProfile(name, phone) {
-    currentProfile = {
-        id: createId(),
-        name: name.trim(),
-        phone: String(phone || "").replace(/\D/g, "")
-    };
-
-    try {
-        localStorage.setItem(
-            PROFILE_KEY,
-            JSON.stringify(currentProfile)
-        );
-    } catch (error) {
-        alert("Your browser could not save the profile.");
-        return;
-    }
-
-    openDashboard();
-}
-
-function openDashboard() {
-    if (!currentProfile) {
-        showScreen("home");
-        return;
-    }
-
-    $("displayName").textContent = currentProfile.name;
-    renderDashboard();
-    showScreen("dashboard");
+  renderDashboard();
 }
 
 function renderDashboard() {
-    const data = readStorage();
+  if (!me) {
+    showScreen("home");
+    return;
+  }
 
-    const myInvitations = data.invitations.filter(
-        (invitation) => invitation.ownerId === currentProfile?.id
+  $("displayName").textContent = me.name;
+  renderInvitations();
+  showScreen("dashboard");
+}
+
+function renderInvitations() {
+  const data = readData();
+
+  const mine = data.invitations.filter(
+    invitation => invitation.ownerId === me?.id
+  );
+
+  $("inviteCount").textContent = mine.length;
+
+  $("replyCount").textContent = mine.reduce(
+    (total, invitation) => total + (invitation.replies || []).length,
+    0
+  );
+
+  const host = $("cards");
+
+  if (!mine.length) {
+    host.innerHTML = `
+      <div class="empty-state">
+        <span>♡</span>
+        <h3>Your story starts here</h3>
+        <p>Create your first invitation and it will appear here.</p>
+      </div>
+    `;
+    return;
+  }
+
+  host.innerHTML = mine.slice().reverse().map(invitation => `
+    <article class="invite-card">
+      <div class="invite-card-top">
+        <small>${(invitation.replies || []).length} REPLIES</small>
+        <small>${escapeHTML(
+          new Date(invitation.created).toLocaleDateString()
+        )}</small>
+      </div>
+
+      <h3>${escapeHTML(invitation.title)}</h3>
+
+      <p>${escapeHTML(
+        invitation.message || "A little moment made personal."
+      )}</p>
+
+      <div class="card-actions">
+        <button class="btn btn-primary" data-copy="${escapeHTML(invitation.id)}">
+          Copy link ↗
+        </button>
+
+        <button class="btn btn-ghost" data-preview="${escapeHTML(invitation.id)}">
+          Preview
+        </button>
+
+        <button class="btn btn-ghost" data-delete="${escapeHTML(invitation.id)}">
+          Delete
+        </button>
+      </div>
+
+      ${(invitation.replies || []).map(reply => `
+        <div class="reply-card">
+          <strong>♡ ${escapeHTML(reply.name)}</strong>
+
+          <p>
+            ${Object.entries(reply.answers || {}).map(([key, value]) => `
+              <b>${escapeHTML(key)}:</b> ${escapeHTML(value || "—")}
+            `).join("<br>")}
+          </p>
+
+          <p>${escapeHTML(new Date(reply.at).toLocaleString())}</p>
+        </div>
+      `).join("")}
+    </article>
+  `).join("");
+}
+
+function getLines(id) {
+  return $(id).value
+    .split(/\r?\n/)
+    .map(value => value.trim())
+    .filter(Boolean)
+    .slice(0, 12);
+}
+
+function buildInvitation(event) {
+  event.preventDefault();
+
+  const questions = [];
+
+  const addChoice = (checkboxId, key, label, fieldId) => {
+    if (!$(checkboxId).checked) return;
+
+    const options = getLines(fieldId);
+
+    if (!options.length) {
+      throw new Error(
+        `Please add at least one option for "${label}" or switch that question off.`
+      );
+    }
+
+    questions.push({
+      key,
+      label,
+      type: "choice",
+      options
+    });
+  };
+
+  try {
+    addChoice(
+      "usePlace",
+      "Place",
+      "Where would you like to go?",
+      "places"
     );
 
-    $("inviteCount").textContent = myInvitations.length;
-
-    $("replyCount").textContent = myInvitations.reduce(
-        (total, invitation) =>
-            total + (invitation.replies || []).length,
-        0
+    addChoice(
+      "useFood",
+      "Food",
+      "What sounds good to eat?",
+      "foods"
     );
 
-    if (!myInvitations.length) {
-        $("cards").innerHTML =
-            '<p class="empty">Your invitations will appear here.</p>';
-        return;
-    }
+    addChoice(
+      "useTravel",
+      "Transport",
+      "How should we get there?",
+      "travels"
+    );
+  } catch (error) {
+    $("builderMessage").textContent = error.message;
+    return;
+  }
 
-    $("cards").innerHTML = myInvitations
-        .slice()
-        .reverse()
-        .map((invitation) => {
-            const replies = invitation.replies || [];
+  if ($("useDate").checked) {
+    questions.push({
+      key: "Date",
+      label: "Which date works for you?",
+      type: "date"
+    });
+  }
 
-            return `
-                <article class="invitecard">
-                    <small>
-                        ${replies.length} REPLIES ·
-                        ${escapeHTML(new Date(invitation.created).toLocaleDateString())}
-                    </small>
+  if ($("useTime").checked) {
+    questions.push({
+      key: "Time",
+      label: "What time suits you?",
+      type: "time"
+    });
+  }
 
-                    <h3>${escapeHTML(invitation.title)}</h3>
+  if ($("useNote").checked) {
+    questions.push({
+      key: "Note",
+      label: "Anything you'd like me to know?",
+      type: "text"
+    });
+  }
 
-                    <p>${escapeHTML(
-                        invitation.message || "A little moment made personal."
-                    )}</p>
+  if (!questions.length) {
+    $("builderMessage").textContent =
+      "Please switch on at least one question.";
+    return;
+  }
 
-                    <div class="cardactions">
-                        <button class="gold"
-                            data-copy="${escapeHTML(invitation.id)}">
-                            Copy link ↗
-                        </button>
+  const invitation = {
+    id: makeId(),
+    ownerId: me.id,
+    ownerName: me.name,
+    title: $("title").value.trim(),
+    message: $("message").value.trim(),
+    questions,
+    replies: [],
+    created: new Date().toISOString()
+  };
 
-                        <button class="outline"
-                            data-preview="${escapeHTML(invitation.id)}">
-                            Preview
-                        </button>
+  const data = readData();
+  data.invitations.push(invitation);
 
-                        <button class="outline"
-                            data-delete="${escapeHTML(invitation.id)}">
-                            Delete
-                        </button>
-                    </div>
+  if (!writeData(data)) return;
 
-                    ${replies.map((reply) => `
-                        <div class="reply">
-                            <strong>♡ ${escapeHTML(reply.name)}</strong>
+  activeInvite = invitation;
 
-                            <p>
-                                ${Object.entries(reply.answers || {})
-                                    .map(([question, answer]) =>
-                                        `<b>${escapeHTML(question)}:</b>
-                                        ${escapeHTML(answer || "—")}`
-                                    )
-                                    .join("<br>")}
-                            </p>
+  $("url").value = invitationURL(invitation);
+  $("copyMessage").textContent = "";
+  $("builderMessage").textContent = "";
 
-                            <p>${escapeHTML(
-                                new Date(reply.at).toLocaleString()
-                            )}</p>
-                        </div>
-                    `).join("")}
-                </article>
-            `;
-        })
-        .join("");
+  showScreen("link");
 }
 
-/* ---------- Invitation builder ---------- */
+async function copyText(value, statusElement) {
+  try {
+    await navigator.clipboard.writeText(value);
 
-function getOptions(fieldId) {
-    return $(fieldId).value
-        .split(/\r?\n/)
-        .map((option) => option.trim())
-        .filter(Boolean)
-        .slice(0, 12);
-}
-
-function createInvitation(event) {
-    event.preventDefault();
-
-    const questions = [];
-
-    function addChoiceQuestion(checkId, key, label, optionsId) {
-        if (!$(checkId).checked) return;
-
-        const options = getOptions(optionsId);
-
-        if (!options.length) {
-            throw new Error(
-                "Please add at least one option or turn that question off."
-            );
-        }
-
-        questions.push({
-            key,
-            label,
-            type: "choice",
-            options
-        });
+    if (statusElement) {
+      statusElement.textContent = "Copied! Ready to share. ♡";
     }
+  } catch {
+    const temporary = document.createElement("textarea");
+
+    temporary.value = value;
+    temporary.style.position = "fixed";
+    temporary.style.opacity = "0";
+
+    document.body.appendChild(temporary);
+    temporary.select();
+
+    let copied = false;
 
     try {
-        addChoiceQuestion(
-            "usePlace",
-            "Place",
-            "Where would you like to go?",
-            "places"
-        );
-
-        addChoiceQuestion(
-            "useFood",
-            "Food",
-            "What sounds good to eat?",
-            "foods"
-        );
-
-        addChoiceQuestion(
-            "useTravel",
-            "Transport",
-            "How should we get there?",
-            "travels"
-        );
-    } catch (error) {
-        alert(error.message);
-        return;
+      copied = document.execCommand("copy");
+    } catch {
+      copied = false;
     }
 
-    if ($("useDate").checked) {
-        questions.push({
-            key: "Date",
-            label: "Which date works for you?",
-            type: "date"
-        });
+    temporary.remove();
+
+    if (statusElement) {
+      statusElement.textContent = copied
+        ? "Copied! Ready to share. ♡"
+        : "Please select and copy the link manually.";
     }
-
-    if ($("useTime").checked) {
-        questions.push({
-            key: "Time",
-            label: "What time suits you?",
-            type: "time"
-        });
-    }
-
-    if ($("useNote").checked) {
-        questions.push({
-            key: "Note",
-            label: "Anything you'd like me to know?",
-            type: "text"
-        });
-    }
-
-    if (!questions.length) {
-        alert("Please enable at least one question.");
-        return;
-    }
-
-    const invitation = {
-        id: createId(),
-        ownerId: currentProfile.id,
-        ownerName: currentProfile.name,
-        title: $("title").value.trim(),
-        message: $("message").value.trim(),
-        questions,
-        replies: [],
-        created: new Date().toISOString()
-    };
-
-    const data = readStorage();
-    data.invitations.push(invitation);
-
-    if (!saveStorage(data)) return;
-
-    activeInvitation = invitation;
-    $("url").value = makeInvitationURL(invitation);
-    $("copyMessage").textContent = "";
-
-    showScreen("link");
+  }
 }
 
-/* ---------- Copy and share ---------- */
+function openGuest(invitation) {
+  activeInvite = invitation;
+  guestName = "";
+  answers = {};
+  questionIndex = 0;
 
-async function copyText(text, messageElement) {
-    try {
-        await navigator.clipboard.writeText(text);
+  $("guestEnvelopeStage").hidden = false;
+  $("guestEnvelope").classList.remove("open");
+  $("openEnvelope").disabled = false;
 
-        if (messageElement) {
-            messageElement.textContent = "Copied! Ready to share. ♡";
-        }
-    } catch (error) {
-        const temporaryInput = document.createElement("textarea");
+  $("guestContent").hidden = true;
+  $("nameForm").hidden = false;
+  $("progressArea").hidden = true;
+  $("question").innerHTML = "";
+  $("guestActions").hidden = true;
+  $("final").hidden = true;
 
-        temporaryInput.value = text;
-        temporaryInput.style.position = "fixed";
-        temporaryInput.style.opacity = "0";
+  $("guestTitle").textContent = invitation.title;
 
-        document.body.appendChild(temporaryInput);
-        temporaryInput.select();
+  $("guestIntro").textContent =
+    invitation.message ||
+    `${invitation.ownerName} has a little question for you.`;
 
-        const copied = document.execCommand("copy");
-        temporaryInput.remove();
-
-        if (messageElement) {
-            messageElement.textContent = copied
-                ? "Copied! Ready to share. ♡"
-                : "Please select and copy the link manually.";
-        }
-    }
+  showScreen("guest");
 }
 
-/* ---------- Guest invitation ---------- */
+function startGuest(event) {
+  event.preventDefault();
 
-function openGuestInvitation(invitation) {
-    activeInvitation = invitation;
-    guestName = "";
-    guestAnswers = {};
-    questionIndex = 0;
+  guestName = $("guestName").value.trim();
 
-    $("nameForm").hidden = false;
-    $("question").innerHTML = "";
-    $("guestActions").hidden = true;
-    $("final").hidden = true;
+  if (!guestName) return;
 
-    $("guestTitle").innerHTML =
-        `${escapeHTML(invitation.title)}<br><i>♡</i>`;
+  $("nameForm").hidden = true;
+  $("progressArea").hidden = false;
 
-    $("guestIntro").textContent =
-        invitation.message ||
-        `${invitation.ownerName} has a little question for you.`;
+  if (!activeInvite.questions.length) {
+    finishGuest();
+    return;
+  }
 
-    $("progress").textContent = "A LITTLE QUESTION";
-
-    showScreen("guest");
-}
-
-function startGuestQuestions(event) {
-    event.preventDefault();
-
-    guestName = $("guestName").value.trim();
-
-    if (!guestName) {
-        alert("Please enter your name first. ♡");
-        return;
-    }
-
-    $("nameForm").hidden = true;
-
-    if (!activeInvitation.questions.length) {
-        finishInvitation();
-        return;
-    }
-
-    renderQuestion();
+  renderQuestion();
 }
 
 function renderQuestion() {
-    const question = activeInvitation.questions[questionIndex];
+  const question = activeInvite.questions[questionIndex];
 
-    $("progress").textContent =
-        `QUESTION ${questionIndex + 1} OF ${activeInvitation.questions.length}`;
+  const percentage = Math.round(
+    (questionIndex / activeInvite.questions.length) * 100
+  );
 
-    $("guestIntro").textContent =
-        `Just for you, ${guestName}. Choose what feels right.`;
+  $("progressText").textContent =
+    `QUESTION ${questionIndex + 1} OF ${activeInvite.questions.length}`;
 
-    $("question").innerHTML = `
-        <div class="qtitle">${escapeHTML(question.label)}</div>
+  $("progressPercent").textContent = `${percentage}%`;
+  $("progressBar").style.width = `${percentage}%`;
+
+  $("question").innerHTML = `
+    <h2 class="question-title">${escapeHTML(question.label)}</h2>
+    <p class="question-subtitle">
+      Just for you, ${escapeHTML(guestName)}. Choose what feels right.
+    </p>
+  `;
+
+  if (question.type === "choice") {
+    $("question").innerHTML += `
+      <div class="options-grid">
+        ${question.options.map(option => `
+          <button
+            type="button"
+            class="option-card ${answers[question.key] === option ? "selected" : ""}"
+            data-option="${escapeHTML(option)}"
+          >
+            <span class="option-emoji">
+              ${escapeHTML(optionDecor[option] || "♡")}
+            </span>
+
+            <span class="option-label">${escapeHTML(option)}</span>
+
+            <span class="option-check">♡ SELECTED</span>
+          </button>
+        `).join("")}
+      </div>
     `;
+  } else {
+    const type =
+      question.type === "date" || question.type === "time"
+        ? question.type
+        : "text";
 
-    if (question.type === "choice") {
-        $("question").innerHTML += `
-            <div class="options">
-                ${question.options.map((option) => `
-                    <button type="button"
-                        class="option ${
-                            guestAnswers[question.key] === option
-                                ? "selected"
-                                : ""
-                        }"
-                        data-option="${escapeHTML(option)}">
-                        ${escapeHTML(option)}
-                    </button>
-                `).join("")}
-            </div>
-        `;
-    } else {
-        const type = ["date", "time"].includes(question.type)
-            ? question.type
-            : "text";
+    $("question").innerHTML += `
+      <input
+        id="answer"
+        type="${type}"
+        ${type === "text"
+          ? 'maxlength="250" placeholder="Write a little note…"'
+          : ""}
+        value="${escapeHTML(answers[question.key] || "")}"
+        aria-label="Your answer"
+      >
+    `;
+  }
 
-        $("question").innerHTML += `
-            <input
-                id="answer"
-                type="${type}"
-                maxlength="250"
-                placeholder="Your answer"
-                value="${escapeHTML(guestAnswers[question.key] || "")}"
-            >
-        `;
-    }
+  $("guestActions").hidden = false;
+  $("prev").disabled = questionIndex === 0;
 
-    $("guestActions").hidden = false;
-    $("prev").disabled = questionIndex === 0;
-
-    $("next").textContent =
-        questionIndex === activeInvitation.questions.length - 1
-            ? "Confirm answers ♡"
-            : "Continue →";
+  $("next").textContent =
+    questionIndex === activeInvite.questions.length - 1
+      ? "Confirm answers ♡"
+      : "Continue →";
 }
 
-function readCurrentAnswer() {
-    const question = activeInvitation.questions[questionIndex];
+function getCurrentAnswer() {
+  const question = activeInvite.questions[questionIndex];
 
-    if (question.type === "choice") {
-        if (!guestAnswers[question.key]) {
-            alert("Please choose an option. ♡");
-            return false;
-        }
-    } else {
-        const input = $("answer");
-        const answer = input ? input.value.trim() : "";
+  if (question.type === "choice") {
+    if (!answers[question.key]) {
+      alert("Choose an option before continuing. ♡");
+      return false;
+    }
+  } else {
+    const input = $("answer");
+    const value = input ? input.value.trim() : "";
 
-        if (!answer) {
-            alert("Please answer this question. ♡");
-            return false;
-        }
-
-        guestAnswers[question.key] = answer;
+    if (!value) {
+      alert("Please answer this question. ♡");
+      return false;
     }
 
-    return true;
+    answers[question.key] = value;
+  }
+
+  return true;
 }
 
-function finishInvitation() {
-    const data = readStorage();
+function finishGuest() {
+  const data = readData();
 
-    const invitation = data.invitations.find(
-        (item) => item.id === activeInvitation.id
+  const invitation = data.invitations.find(
+    item => item.id === activeInvite.id
+  );
+
+  if (invitation) {
+    invitation.replies = invitation.replies || [];
+
+    invitation.replies.push({
+      name: guestName,
+      answers: { ...answers },
+      at: new Date().toISOString()
+    });
+
+    writeData(data);
+  }
+
+  $("progressBar").style.width = "100%";
+  $("progressPercent").textContent = "100%";
+  $("progressText").textContent = "ALL DONE";
+
+  $("question").innerHTML = "";
+  $("guestActions").hidden = true;
+  $("final").hidden = false;
+
+  $("final").innerHTML = `
+    <div class="final-flower">💐</div>
+    <h2>It's a date, ${escapeHTML(guestName)}!</h2>
+    <p>Thank you for making this little moment special. ♡</p>
+
+    <div class="reply-summary">
+      ${Object.entries(answers).map(([key, value]) => `
+        <p><b>${escapeHTML(key)}:</b> ${escapeHTML(value)}</p>
+      `).join("")}
+    </div>
+
+    <p>
+      Here's to good company, little surprises, and a memory worth keeping.
+    </p>
+  `;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    me = JSON.parse(localStorage.getItem(PROFILE_KEY) || "null");
+  } catch {
+    me = null;
+  }
+
+  $("profileForm").addEventListener("submit", event => {
+    event.preventDefault();
+
+    setProfile(
+      $("ownerName").value,
+      $("ownerPhone").value
     );
+  });
+
+  $("builder").addEventListener("submit", buildInvitation);
+
+  $("switchProfile").addEventListener("click", () => {
+    showScreen("home");
+  });
+
+  $("back").addEventListener("click", renderDashboard);
+
+  $("copy").addEventListener("click", () => {
+    copyText($("url").value, $("copyMessage"));
+  });
+
+  $("preview").addEventListener("click", () => {
+    if (activeInvite) {
+      window.open(
+        invitationURL(activeInvite),
+        "_blank",
+        "noopener,noreferrer"
+      );
+    }
+  });
+
+  $("cards").addEventListener("click", event => {
+    const copyButton = event.target.closest("[data-copy]");
+    const previewButton = event.target.closest("[data-preview]");
+    const deleteButton = event.target.closest("[data-delete]");
+
+    if (copyButton) {
+      const invitation = findInvitation(copyButton.dataset.copy);
+
+      if (invitation) {
+        copyText(invitationURL(invitation), $("builderMessage"));
+      }
+    } else if (previewButton) {
+      const invitation = findInvitation(previewButton.dataset.preview);
+
+      if (invitation) {
+        window.open(
+          invitationURL(invitation),
+          "_blank",
+          "noopener,noreferrer"
+        );
+      }
+    } else if (
+      deleteButton &&
+      confirm("Delete this invitation and its replies from this browser?")
+    ) {
+      const data = readData();
+
+      data.invitations = data.invitations.filter(
+        invitation => invitation.id !== deleteButton.dataset.delete
+      );
+
+      writeData(data);
+      renderInvitations();
+    }
+  });
+
+  $("nameForm").addEventListener("submit", startGuest);
+
+  $("openEnvelope").addEventListener("click", () => {
+    $("guestEnvelope").classList.add("open");
+    $("openEnvelope").disabled = true;
+
+    setTimeout(() => {
+      $("guestEnvelopeStage").hidden = true;
+      $("guestContent").hidden = false;
+      $("guestName").focus();
+    }, 650);
+  });
+
+  $("question").addEventListener("click", event => {
+    const button = event.target.closest("[data-option]");
+
+    if (!button) return;
+
+    const question = activeInvite.questions[questionIndex];
+
+    answers[question.key] = button.dataset.option;
+    renderQuestion();
+  });
+
+  $("next").addEventListener("click", () => {
+    if (!getCurrentAnswer()) return;
+
+    if (questionIndex < activeInvite.questions.length - 1) {
+      questionIndex++;
+      renderQuestion();
+    } else {
+      finishGuest();
+    }
+  });
+
+  $("prev").addEventListener("click", () => {
+    if (questionIndex > 0) {
+      questionIndex--;
+      renderQuestion();
+    }
+  });
+
+  $("goHome").addEventListener("click", () => {
+    history.replaceState({}, "", cleanBaseURL());
+    showScreen("home");
+  });
+
+  const inviteId = new URLSearchParams(location.search).get("invite");
+
+  if (inviteId) {
+    const invitation = findInvitation(inviteId);
 
     if (invitation) {
-        invitation.replies = invitation.replies || [];
-
-        invitation.replies.push({
-            name: guestName,
-            answers: { ...guestAnswers },
-            at: new Date().toISOString()
-        });
-
-        saveStorage(data);
-    }
-
-    $("question").innerHTML = "";
-    $("guestActions").hidden = true;
-
-    $("progress").textContent = "ALL DONE";
-
-    $("guestTitle").innerHTML =
-        `It's a date, <i>${escapeHTML(guestName || "my love")}!</i>`;
-
-    $("guestIntro").textContent =
-        "Thank you for making this little moment special.";
-
-    $("final").hidden = false;
-
-    $("final").innerHTML = `
-        <h2>Looking forward to it ♡</h2>
-        <p>${escapeHTML(activeInvitation.ownerName)} is going to be smiling about this.</p>
-        <p>
-            Here's to good company, little surprises,
-            and a memory worth keeping.
-        </p>
-    `;
-}
-
-/* ---------- Event listeners ---------- */
-
-document.addEventListener("DOMContentLoaded", function () {
-    try {
-        currentProfile = JSON.parse(
-            localStorage.getItem(PROFILE_KEY) || "null"
-        );
-    } catch (error) {
-        currentProfile = null;
-    }
-
-    $("profileForm").addEventListener("submit", (event) => {
-        event.preventDefault();
-
-        saveProfile(
-            $("ownerName").value,
-            $("ownerPhone").value
-        );
-    });
-
-    $("builder").addEventListener("submit", createInvitation);
-
-    $("switchProfile").addEventListener("click", () => {
-        showScreen("home");
-    });
-
-    $("back").addEventListener("click", openDashboard);
-
-    $("copy").addEventListener("click", () => {
-        copyText($("url").value, $("copyMessage"));
-    });
-
-    $("preview").addEventListener("click", () => {
-        if (activeInvitation) {
-            window.open(
-                makeInvitationURL(activeInvitation),
-                "_blank",
-                "noopener,noreferrer"
-            );
-        }
-    });
-
-    $("cards").addEventListener("click", (event) => {
-        const copyButton = event.target.closest("[data-copy]");
-        const previewButton = event.target.closest("[data-preview]");
-        const deleteButton = event.target.closest("[data-delete]");
-
-        if (copyButton) {
-            const invitation = findInvitation(copyButton.dataset.copy);
-
-            if (invitation) {
-                copyText(
-                    makeInvitationURL(invitation),
-                    $("builderMessage")
-                );
-            }
-        } else if (previewButton) {
-            const invitation = findInvitation(
-                previewButton.dataset.preview
-            );
-
-            if (invitation) {
-                window.open(
-                    makeInvitationURL(invitation),
-                    "_blank",
-                    "noopener,noreferrer"
-                );
-            }
-        } else if (
-            deleteButton &&
-            window.confirm(
-                "Delete this invitation and its replies from this browser?"
-            )
-        ) {
-            const data = readStorage();
-
-            data.invitations = data.invitations.filter(
-                (invitation) =>
-                    invitation.id !== deleteButton.dataset.delete
-            );
-
-            if (saveStorage(data)) {
-                renderDashboard();
-            }
-        }
-    });
-
-    $("nameForm").addEventListener("submit", startGuestQuestions);
-
-    $("question").addEventListener("click", (event) => {
-        const optionButton = event.target.closest("[data-option]");
-
-        if (!optionButton) return;
-
-        const question = activeInvitation.questions[questionIndex];
-
-        guestAnswers[question.key] = optionButton.dataset.option;
-
-        renderQuestion();
-    });
-
-    $("next").addEventListener("click", () => {
-        if (!readCurrentAnswer()) return;
-
-        if (questionIndex < activeInvitation.questions.length - 1) {
-            questionIndex++;
-            renderQuestion();
-        } else {
-            finishInvitation();
-        }
-    });
-
-    $("prev").addEventListener("click", () => {
-        if (questionIndex > 0) {
-            questionIndex--;
-            renderQuestion();
-        }
-    });
-
-    $("goHome").addEventListener("click", () => {
-        window.history.replaceState({}, "", getBaseURL());
-        showScreen("home");
-    });
-
-    /* Load shared invitation link */
-    const invitationId =
-        new URLSearchParams(window.location.search).get("invite");
-
-    if (invitationId) {
-        const invitation = findInvitation(invitationId);
-
-        if (invitation) {
-            openGuestInvitation(invitation);
-        } else {
-            showScreen("missing");
-        }
-    } else if (currentProfile) {
-        openDashboard();
+      openGuest(invitation);
     } else {
-        showScreen("home");
+      showScreen("missing");
     }
+  } else if (me) {
+    renderDashboard();
+  } else {
+    showScreen("home");
+  }
 });
 
